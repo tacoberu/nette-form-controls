@@ -19,9 +19,11 @@ use Nette;
 
 
 /**
+ * Soubor ke smazání.
+ * 
  * @author Martin Takáč <taco@taco-beru.name>
  */
-class FileUploaded extends Nette\Object
+class FileRemove extends Nette\Object
 {
 
 

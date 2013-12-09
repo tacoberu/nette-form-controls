@@ -21,7 +21,9 @@ use Nette,
 	Nette\Utils\Validators,
 	Nette\Forms\Form,
 	Nette\Forms\Controls\BaseControl;
-use Taco;
+use Taco,
+	Taco\Nette\Http\FileUploaded,
+	Taco\Nette\Http\FileRemove;
 
 
 /**
@@ -41,12 +43,23 @@ class MultipleUploadControl extends BaseControl
 
 
 	/**
-	 * Seznam existujících nahraných obrázků.
+	 * Seznam existujících nahraných souborů.
 	 * @var array
 	 */
 	private $items = array();
 
 
+	/**
+	 * Seznam existujících nahraných souborů, které se mají smazat.
+	 * @var array
+	 */
+	private $remove = array();
+
+
+	/**
+	 * Možnost nahrávat více souborů najednou.
+	 * @var boolean
+	 */
 	private $multiple = False;
 	
 	
@@ -54,10 +67,10 @@ class MultipleUploadControl extends BaseControl
 	 * @param string
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct($label = Null, $multiple = FALSE)
+	public function __construct($label = Null, $multiple = True)
 	{
 		parent::__construct($label);
-		$this->multiple = (bool) $multiple;
+		$this->multiple = True; //(bool) $multiple;
 		$this->addRule(array(__class__, 'validateDate'), 'Neplatný datum.');
 		
 		$this->transaction = (int) (microtime(True) * 10000) - self::EPOCH_START;
@@ -89,11 +102,7 @@ class MultipleUploadControl extends BaseControl
 	 */
 	public function getValue()
 	{
-		$ret = $this->items;
-		if ($this->value) {
-			$ret[] = $this->value;
-		}
-		return $ret;
+		return array_merge($this->items, $this->remove, $this->value);
 	}
 
 
@@ -105,33 +114,33 @@ class MultipleUploadControl extends BaseControl
 	 */
 	public function loadHttpData()
 	{
-		$file = $this->getHttpData(Form::DATA_FILE, '[new]');
-		if ($file === NULL) {
-			$file = new FileUpload(NULL);
-		}
 		$this->transaction = $this->getHttpData(Form::DATA_LINE, '[transaction]');
+		$files = $this->getHttpData(Form::DATA_FILE, '[new][]');
+		$items = $this->getHttpData(Form::DATA_LINE, '[exists][]');
+		$remove = $this->getHttpData(Form::DATA_LINE, '[remove][]');
 
 		//	Ty, co přišli v pořádku, tak uložit do transakce
-		if ($file->isOk()) {
-			$file = self::storeToTransaction($this->transaction, $file);
+		$this->value = array();
+		foreach ($files as $file) {
+			if ($file->isOk()) {
+				$this->value[] = self::storeToTransaction($this->transaction, $file);
+			}
 		}
-
-		$this->value = $file;
+		
+		//	Promazávání existujících.
+		$this->items = array();
+		foreach ($items as $item) {
+			if (in_array($item, $remove)) {
+				$this->remove[] = new FileRemove($item);
+			}
+			else {
+				$this->items[] = new FileUploaded($item);
+			}
+		}
 	}
 
 
 
-	/**
-	 * Returns HTML name of control.
-	 * @return string
-	 */
-	public function getHtmlName()
-	{
-		return parent::getHtmlName() . ($this->multiple ? '[]' : '');
-	}
-
-
-	
 	/**
 	 * Html representation of control.
 	 * 
@@ -142,25 +151,37 @@ class MultipleUploadControl extends BaseControl
 		$name = $this->getHtmlName();
 		
 		$container = Html::el();
+		
 		foreach ($this->items as $item) {
-			$container->add(Html::el('div', array(
-					'class' => 'file',
-					))->setText($item->path));
+			$container->add(Html::el('input', array(
+					'type' => 'hidden',
+					'value' => $item->path,
+					'name' => $name . '[exists][]',
+					)));
+			$container->add(Html::el('input', array(
+					'type' => 'checkbox',
+					'value' => $item->path,
+					'name' => $name . '[remove][]',
+					'title' => strtr('Remove file: %{name}', array(
+							'%{name}' => $item->name
+							)),
+					)));
+			$container->add(Html::el('span', array(
+					'class' => array('file', $item->type),
+					))->setText($item->name));
 		}
 
 		return $container
 			->add(Html::el('input', array(
 					'type' => 'file',
-					'name' => $name . '[new]',
-					'multiple' => $this->multiple,
+					'name' => $name . '[new][]',
+					'multiple' => True, //$this->multiple,
 					)))
 			->add(Html::el('input', array(
-					'type' => 'text',
+					'type' => 'hidden',
 					'name' => $name . '[transaction]',
 					'value' => $this->transaction,
 					)))
-			//~ ->add(Html::el('input')->name($name . '[month]')->value($this->month))
-			//~ ->add(Html::el('input')->name($name . '[year]')->value($this->year))
 			;
 	}
 
@@ -175,17 +196,6 @@ class MultipleUploadControl extends BaseControl
 	public static function validateDate(self $control)
 	{
 		return True;
-	}
-
-
-
-	/**
-	 * Has been any file uploaded?
-	 * @return bool
-	 */
-	public function isFilled()
-	{
-		return $this->value instanceof FileUpload ? $this->value->isOk() : (bool) $this->value; // ignore NULL object
 	}
 
 
