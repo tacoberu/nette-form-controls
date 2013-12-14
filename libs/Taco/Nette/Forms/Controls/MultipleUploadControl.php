@@ -173,7 +173,9 @@ class MultipleUploadControl extends BaseControl
 	{
 		$name = $this->getHtmlName();
 		
-		$container = Html::el('ul');
+		$container = Html::el('ul', array(
+				'class' => 'file-uploader',
+				));
 
 		//	Prvky nahrané už někde na druhé straně
 		foreach ($this->value as $item) {
@@ -217,9 +219,6 @@ class MultipleUploadControl extends BaseControl
 						'name' => $name . '[transaction]',
 						'value' => $this->transaction,
 						)))
-				->add(Html::el('span', array(
-						'class' => array('file', 'new-file'),
-						))->setText('Nevybráno'))
 						);
 	}
 
