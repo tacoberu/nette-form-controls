@@ -51,6 +51,7 @@ if (jQuery)(function($) {
 		}
 
 
+
 		/**
 		 * Inicializate function for instantion.
 		 *
@@ -84,19 +85,37 @@ if (jQuery)(function($) {
 			});
 
 			//  Click send to fileinput
-			$(m).find(context.uploadWrapper).click(function(env) {
+			$(m).find(context.uploadWrapper)
+				.click(function(env) {
 				$(env.target).find(':file').click();
 			});
 
 			//  Send by ajax/iframe.
-			$(m).find(context.uploadWrapper + ' :file').on('change', function() {
+			$(m).find(context.uploadWrapper + ' :file')
+				.on('change', function() {
 				context.onChange(self);
 			});
 			
 			//	Hide remove item
-			$(m).find(':checkbox').on('change', function() {
-				$(this).parents('li.file').hide(500);
+			$(m).find(':checkbox')
+				.on('change', function() {
+				context.onRemoveItem(self, $(this).parents('li.file'));
 			});
+
+			//	Hide has removed item
+			$(m).find(':checkbox:checked').each(function(a,b) {
+				context.onRemoveItem(self, $(this).parents('li.file'));
+			});
+
+            //  Auto send via special button.
+            if (context.autoSubmitBy) {
+				$(m).parent()
+					.find(assertEmpty(context.autoSubmitBy, context.autoSubmitBy))
+					.css({
+							'visibility': 'hidden',
+							'position' : 'absolute'
+							});
+			}
 
 			return self;
 		};
@@ -116,10 +135,11 @@ if (jQuery)(function($) {
 			 */
 			this.defaults = {
 				onChange: filePreuploader.prototype.onChange,
+				onRemoveItem: filePreuploader.prototype.onRemoveItem,
 				uploadWrapper: 'li.file.new-file',
 				uploaderName: 'file-preuploader',
 				autoSubmitBy: false,
-				version: '0.1'
+				version: '0.2'
 			};
 
 
@@ -190,15 +210,20 @@ if (jQuery)(function($) {
 
 						//	Hide remove item
 						$(':checkbox', this).on('change', function() {
-							$(this).parents('li.file').hide(500);
+							context.onRemoveItem(self, $(this).parents('li.file'));
 						});
 
+						//	Hide has removed item
+						$(':checkbox:checked', this).each(function(a,b) {
+							context.onRemoveItem(self, $(this).parents('li.file'));
+						});
 					});
 			});
 
             //  Auto send via special button.
             if (this.autoSubmitBy) {
-				form.find(context.uploadWrapper + ' :file').parents('li.file')
+				form.find(context.uploadWrapper + ' :file')
+					.parents('li.file')
 					.css({
 						'background-image': 'url("' + context.spinnerUrl + '")',
 						'background-position': 'center',
@@ -207,6 +232,21 @@ if (jQuery)(function($) {
 				form.find(assertEmpty(this.autoSubmitBy, this.autoSubmitBy)).click();
 			}
 		}
+
+
+
+		/**
+		 * Handle event for change file input.
+		 *
+		 * @this instance pluginu.
+		 * @param DOMElement original select.
+		 */
+		filePreuploader.prototype.onRemoveItem = function(component, item)
+		{
+			$(item).hide(500);
+			console.log('onRmeoveItem', component, item);
+		}
+
 
 		return filePreuploader;
 	})();
