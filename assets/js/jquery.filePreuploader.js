@@ -66,24 +66,6 @@ if (jQuery)(function($) {
 
 			var m = $(self);
 
-			//	Information notice
-			$(m).find(context.uploadWrapper).append($('<span/>', {'text': 'Nevybráno'}));
-
-			//  Hidde input, and info show in span
-			$(m).find(context.uploadWrapper + ' :file').each(function(i, el) {
-				$(el)
-					.css({
-						'visibility': 'hidden'
-						})
-					.change(function(ev) {
-						var s = $(ev.target).val(); // .substr(-20)
-						$(ev.target)
-							.parent()
-							.find('span')
-							.text(s.substr(-20));
-						});
-			});
-
 			//  Click send to fileinput
 			$(m).find(context.uploadWrapper)
 				.click(function(env) {
@@ -139,7 +121,7 @@ if (jQuery)(function($) {
 				uploadWrapper: 'li.file.new-file',
 				uploaderName: 'file-preuploader',
 				autoSubmitBy: false,
-				version: '0.2'
+				version: '0.3'
 			};
 
 
@@ -244,7 +226,6 @@ if (jQuery)(function($) {
 		filePreuploader.prototype.onRemoveItem = function(component, item)
 		{
 			$(item).hide(500);
-			console.log('onRmeoveItem', component, item);
 		}
 
 
