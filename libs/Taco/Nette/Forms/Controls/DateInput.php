@@ -18,6 +18,7 @@ namespace Taco\Nette\Forms\Controls;
 
 use Nette\DateTime,
 	Nette\Utils\Html,
+	Nette\Forms\Helpers,
 	Nette\Forms\Form,
 	Nette\Forms\Controls\BaseControl;
 
@@ -28,19 +29,27 @@ use Nette\DateTime,
  */
 class DateInput extends BaseControl
 {
+	
+	const STYLE_INPUTS = 1;
+	const STYLE_SELECTS = 2;
+
 
 	/** @var int */
 	private $day, $month, $year;
 
 
+	private $style;
+	
+
 	/**
-	 * @param string
-	 * @param string
+	 * @param string 
+	 * @param int from self::STYLE_*
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct($label = Nsull)
+	public function __construct($label = Null, $style = self::STYLE_INPUTS)
 	{
 		parent::__construct($label);
+		$this->style = $style;
 		$this->addRule(array(__class__, 'validateDate'), 'Neplatné datum.');
 	}
 
@@ -68,7 +77,6 @@ class DateInput extends BaseControl
 
 
 	/**
-	 * ...
 	 * @return Nette\DateTime
 	 */
 	public function getValue()
@@ -82,6 +90,7 @@ class DateInput extends BaseControl
 
 	/**
 	 * Mapování hondot z requestu od uživatele na control.
+	 * @return void
 	 */
 	public function loadHttpData()
 	{
@@ -91,11 +100,26 @@ class DateInput extends BaseControl
 	}
 
 
-	
+
 	/**
 	 * @return Nette\Utils\Html
 	 */
 	public function getControl()
+	{
+		switch ($this->style) {
+			case self::STYLE_SELECTS:
+				return $this->makeControlWithSelects();
+			case self::STYLE_INPUTS:
+			default:
+				return $this->makeControlWithInputs();
+		}
+	}
+
+
+	/**
+	 * @return Nette\Utils\Html
+	 */
+	private function makeControlWithInputs()
 	{
 		$name = $this->getHtmlName();
 		
@@ -114,6 +138,39 @@ class DateInput extends BaseControl
 					'size' => 4,
 					'placeholder' => 'month',
 					)))
+			->add(Html::el('input', array(
+					'name' => $name . '[year]',
+					'value' => $this->year,
+					'size' => 4,
+					'placeholder' => 'year',
+					)));
+	}
+
+
+
+	/**
+	 * @return Nette\Utils\Html
+	 */
+	private function makeControlWithSelects()
+	{
+		$name = $this->getHtmlName();
+		$days = range(0,31);
+		unset($days[0]);
+		$months = range(0,12);
+		unset($months[0]);
+		return Html::el('div', array(
+				'class' => array('input'),
+				))
+			->add(Helpers::createSelectBox(
+					$days,
+					array('selected?' => $this->day)
+					)
+					->name($name . '[day]'))
+			->add(Helpers::createSelectBox(
+					$months,
+					array('selected?' => $this->month)
+					)
+					->name($name . '[month]'))
 			->add(Html::el('input', array(
 					'name' => $name . '[year]',
 					'value' => $this->year,
