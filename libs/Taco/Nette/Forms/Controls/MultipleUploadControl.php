@@ -71,6 +71,13 @@ class MultipleUploadControl extends BaseControl
 	
 	
 	/**
+	 * Funkce pro zpracování mimetype na class
+	 * @var function
+	 */
+	private $parseType;
+	
+	
+	/**
 	 * @param string
 	 * @throws \InvalidArgumentException
 	 */
@@ -82,6 +89,27 @@ class MultipleUploadControl extends BaseControl
 				'class' => 'file-uploader',
 				));
 		$this->transaction = (int) (microtime(True) * 10000) - self::EPOCH_START;
+		$this->parseType = function ($s)
+		{
+			if (empty($s)) {
+				return $s;
+			}
+
+			$p = explode('/', $s, 2);
+			return $p[0];
+		};
+	}
+
+
+
+	/**
+	 * Set function for formating mime type class
+	 * 
+	 * @param function
+	 */
+	public function setMimeTypeClassFunction($fce)
+	{
+		$this->parseType = $fce;
 	}
 
 
@@ -175,6 +203,7 @@ class MultipleUploadControl extends BaseControl
 		$name = $this->getHtmlName();
 		
 		$container = clone $this->control;
+		$parseTypeFunction = $this->parseType;
 
 		//	Prvky nahrané už někde na druhé straně
 		foreach ($this->value as $item) {
@@ -201,7 +230,8 @@ class MultipleUploadControl extends BaseControl
 									)),
 							)))
 					->add(Html::el('span', array(
-							'class' => array('file', self::parseType($item->contentType)),
+//							'class' => array('file', self::parseType($item->contentType)),
+							'class' => array('file', $parseTypeFunction($item->contentType)),
 							))->setText($item->name))
 					);
 		}
