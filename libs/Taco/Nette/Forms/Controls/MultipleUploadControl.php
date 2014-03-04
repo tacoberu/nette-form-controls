@@ -183,10 +183,12 @@ class MultipleUploadControl extends BaseControl
 		}
 
 		//	Ty, co přišli v pořádku, tak uložit do transakce, co nejsou v pořádku zahodit a oznámit neuspěch.
-		//	@TODO oznámit neuspěch
 		foreach ($newfiles as $file) {
 			if ($file->isOk()) {
 				$this->value[] = self::storeToTransaction($this->transaction, $file);
+			}
+			else {
+				$this->addError(self::formatError($file));
 			}
 		}
 	}
@@ -230,7 +232,6 @@ class MultipleUploadControl extends BaseControl
 									)),
 							)))
 					->add(Html::el('span', array(
-//							'class' => array('file', self::parseType($item->contentType)),
 							'class' => array('file', $parseTypeFunction($item->contentType)),
 							))->setText($item->name))
 					);
@@ -249,19 +250,6 @@ class MultipleUploadControl extends BaseControl
 						'value' => $this->transaction,
 						)))
 						);
-	}
-
-
-
-	/**
-	 * Unused
-	 * 
-	 * @param self $control
-	 * @return bool
-	 */
-	public static function validateDate(self $control)
-	{
-		return True;
 	}
 
 
@@ -363,6 +351,46 @@ class MultipleUploadControl extends BaseControl
 	private static function formatValue($s)
 	{
 		return $s->contentType . '#' . $s->path;
+	}
+
+
+
+	/**
+	 * @param Taco\Nette\Http\FileUploaded $s
+	 * @return string
+	 */
+	private static function formatError($file)
+	{
+        switch ($file->error) { 
+			case UPLOAD_ERR_OK:
+				throw \LogicException('No error.');
+            case UPLOAD_ERR_INI_SIZE: 
+                $message = "The uploaded file exceeds the upload_max_filesize directive in php.ini"; 
+                break; 
+            case UPLOAD_ERR_FORM_SIZE: 
+                $message = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form"; 
+                break; 
+            case UPLOAD_ERR_PARTIAL: 
+                $message = "The uploaded file was only partially uploaded"; 
+                break; 
+            case UPLOAD_ERR_NO_FILE: 
+                $message = "No file was uploaded"; 
+                break; 
+            case UPLOAD_ERR_NO_TMP_DIR: 
+                $message = "Missing a temporary folder"; 
+                break; 
+            case UPLOAD_ERR_CANT_WRITE: 
+                $message = "Failed to write file to disk"; 
+                break; 
+            case UPLOAD_ERR_EXTENSION: 
+                $message = "File upload stopped by extension"; 
+                break; 
+            default: 
+                $message = "Unknown upload error"; 
+                break; 
+        }
+
+        return "{$file->name}: {$message}";
 	}
 
 
