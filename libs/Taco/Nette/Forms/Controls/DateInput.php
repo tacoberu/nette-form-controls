@@ -29,20 +29,22 @@ use Nette\DateTime,
  */
 class DateInput extends BaseControl
 {
-	
+
 	const STYLE_INPUTS = 1;
 	const STYLE_SELECTS = 2;
 
 
-	/** @var int */
+	/**
+	 * @var int
+	 */
 	private $day, $month, $year;
 
 
 	private $style;
-	
+
 
 	/**
-	 * @param string 
+	 * @param string
 	 * @param int from self::STYLE_*
 	 * @throws \InvalidArgumentException
 	 */
@@ -57,7 +59,7 @@ class DateInput extends BaseControl
 
 	/**
 	 * Nastavení controlu by code
-	 * 
+	 *
 	 * @param string|Nette\DateTime $value
 	 */
 	public function setValue($value)
@@ -116,13 +118,14 @@ class DateInput extends BaseControl
 	}
 
 
+
 	/**
 	 * @return Nette\Utils\Html
 	 */
 	private function makeControlWithInputs()
 	{
 		$name = $this->getHtmlName();
-		
+
 		return Html::el('div', array(
 				'class' => array('input'),
 				))
@@ -183,9 +186,9 @@ class DateInput extends BaseControl
 
 	/**
 	 * Kontrolujeme příchozivší data od uživatele.
-	 * 
+	 *
 	 * @param self $control
-	 * 
+	 *
 	 * @return bool
 	 */
 	public static function validateDate(self $control)
@@ -202,5 +205,7 @@ class DateInput extends BaseControl
 
 		return False;;
 	}
+
+
 
 }
