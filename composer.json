@@ -4,12 +4,11 @@
     "type": "library",
     "require": {
         "php" : ">=5.3.0",
-        "tacoberu/php-utils": "@dev",
-        "nette/forms": "^2.2",
-        "nella/forms-signal-control": "^1.0.1"
+        "tacoberu/php-utils": "dev-nette-0.9"
     },
     "require-dev": {
         "php" : ">=5.3.0",
+        "nette/nette": "~v0.9.6",
         "phpunit/phpunit": "~4.0"
     },
     "authors": [
@@ -22,8 +21,10 @@
         "psr-0": {"Taco": "libs/"}
     },
     "repositories": [
-        { "type": "vcs", "url": "git://github.com/tacoberu/php-utils.git"},
-        { "type": "vcs", "url": "git://github.com/tacoberu/forms-signal-control"}
+        { "type": "vcs", "url": "git://github.com/tacoberu/php-utils.git"}
+    ],
+    "repositories-dev": [
+        { "type": "vcs", "url": "git://github.com/tacoberu/nette.git"}
     ],
     "license": "MIT"
 }

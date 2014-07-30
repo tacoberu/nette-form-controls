@@ -10,7 +10,7 @@ use Taco\Data\DateTime;
 use Nette\Utils\Html,
 	Nette\Forms\Helpers,
 	Nette\Forms\Form,
-	Nette\Forms\Controls\BaseControl;
+	Nette\Forms\FormControl as BaseControl;
 
 
 /**

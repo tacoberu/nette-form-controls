@@ -8,10 +8,9 @@ namespace Taco\Nette\Forms\Controls;
 
 use Nette;
 use Nette\Utils\Validators;
-use Nette\Forms\Controls;
-use Nette\Application\UI\ISignalReceiver;
-use Nette\Application\Responses\JsonResponse;
-use Nella\Forms\SignalControl\SignalControl;
+use Nette\Forms;
+use Nette\Application\ISignalReceiver;
+use Nette\Application\JsonResponse;
 
 
 /**
@@ -24,7 +23,7 @@ use Nella\Forms\SignalControl\SignalControl;
  *
  * @author Martin Takáč <martin@takac.name>
  */
-class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiver
+class SelectBoxRemoteControl extends Forms\SelectBox implements ISignalReceiver
 {
 
 	/**
@@ -100,7 +99,7 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 		// Výsledky vyhledávání.
 		$payload->items = array_values($payload->items);
 
-		$this->getPresenter()->sendResponse(new JsonResponse($payload));
+		$this->getPresenter()->terminate(new JsonResponse($payload));
 	}
 
 
@@ -112,12 +111,13 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 	{
 		/** @var Nette\Utils\Html $el */
 		$el = parent::getControl();
-		$el->data('type', 'remoteselect');
-		$el->data('data-url', $this->link('//range!', array()));
-		$el->data('min-input', $this->minInput);
-		if ($this->prompt) {
-			$el->data('prompt', $this->prompt);
-		}
+		$el->{'data-type'} = 'remoteselect';
+		$el->{'data-data-url'} = $this->link('//range!', array());
+		$el->{'data-min-input'} = $this->minInput;
+		$el->{'data-page-size'} = $this->pageSize;
+		//~ if ($this->prompt) {
+			//~ $el->{'data-prompt'} = $this->prompt;
+		//~ }
 
 		return $el;
 	}
@@ -130,8 +130,9 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 	 */
 	function loadHttpData()
 	{
-		$value = $this->getHttpData(Nette\Forms\Form::DATA_TEXT);
-		if (($value === NULL) || (is_array($this->disabled) && isset($this->disabled[$value]))){
+		$path = explode('[', strtr(str_replace(array('[]', ']'), '', $this->getHtmlName()), '.', '_'));
+		$value = Nette\ArrayTools::get($this->getForm()->getHttpData(), $path);
+		if (empty($value) || (is_array($this->disabled) && isset($this->disabled[$value]))){
 			$this->value = NULL;
 		}
 		else {
@@ -222,7 +223,9 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 	 */
 	private function prepareRequestRange()
 	{
-		$arr = $this->getPresenter()->parameters;
+		$arr = $this->getPresenter()->request->params;
+		unset($arr['do']);
+		unset($arr['action']);
 		return array(
 			$arr['term'],
 			isset($arr['page']) ? $arr['page'] : 1

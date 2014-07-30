@@ -6,11 +6,11 @@
 
 namespace Taco\Nette\Forms\Controls;
 
-use Nette\Utils\DateTime,
-	Nette\Utils\Html,
+use DateTime;
+use Nette\Web\Html,
 	Nette\Forms\Helpers,
 	Nette\Forms\Form,
-	Nette\Forms\Controls\BaseControl;
+	Nette\Forms\FormControl as BaseControl;
 
 
 /**
@@ -50,12 +50,20 @@ class DateInput extends BaseControl
 	/**
 	 * Nastavení controlu by code
 	 *
-	 * @param string|Nette\DateTime $value
+	 * @param string|DateTime $value
 	 */
 	public function setValue($value)
 	{
 		if ($value) {
-			$data = DateTime::from($value);
+			if ($value instanceof DateTime) {
+				$data = $value;
+			}
+			elseif (is_string($value)) {
+				$data = DateTime::createFromFormat('Y-m-d', $value);
+			}
+			else {
+				throw new InvalidArgumentException('Value must be string or DateTime.');
+			}
 			$this->day = $data->format('j');
 			$this->month = $data->format('n');
 			$this->year = $data->format('Y');
@@ -69,12 +77,12 @@ class DateInput extends BaseControl
 
 
 	/**
-	 * @return Nette\DateTime
+	 * @return DateTime
 	 */
 	public function getValue()
 	{
 		return @ checkdate($this->month, $this->day, $this->year)
-				? DateTime::from("{$this->year}-{$this->month}-{$this->day}")
+				? new DateTime("{$this->year}-{$this->month}-{$this->day} 00:00:00")
 				: Null;
 	}
 
@@ -120,19 +128,19 @@ class DateInput extends BaseControl
 		return Html::el('div', array(
 				'class' => array('input'),
 				))
-			->addHtml(Html::el('input', array(
+			->add(Html::el('input', array(
 					'name' => $name . '[day]',
 					'value' => $this->day,
 					'size' => 4,
 					'placeholder' => 'day',
 					)))
-			->addHtml(Html::el('input', array(
+			->add(Html::el('input', array(
 					'name' => $name . '[month]',
 					'value' => $this->month,
 					'size' => 4,
 					'placeholder' => 'month',
 					)))
-			->addHtml(Html::el('input', array(
+			->add(Html::el('input', array(
 					'name' => $name . '[year]',
 					'value' => $this->year,
 					'size' => 4,
@@ -155,17 +163,17 @@ class DateInput extends BaseControl
 		return Html::el('div', array(
 				'class' => array('input'),
 				))
-			->addHtml(Helpers::createSelectBox(
+			->add(Helpers::createSelectBox(
 					$days,
 					array('selected?' => $this->day)
 					)
 					->name($name . '[day]'))
-			->addHtml(Helpers::createSelectBox(
+			->add(Helpers::createSelectBox(
 					$months,
 					array('selected?' => $this->month)
 					)
 					->name($name . '[month]'))
-			->addHtml(Html::el('input', array(
+			->add(Html::el('input', array(
 					'name' => $name . '[year]',
 					'value' => $this->year,
 					'size' => 4,
@@ -196,7 +204,5 @@ class DateInput extends BaseControl
 
 		return False;;
 	}
-
-
 
 }

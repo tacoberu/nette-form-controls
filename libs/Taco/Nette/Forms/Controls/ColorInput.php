@@ -7,7 +7,7 @@
 namespace Taco\Nette\Forms\Controls;
 
 use Nette\Forms\Form,
-	Nette\Forms\Controls\TextInput;
+	Nette\Forms\TextInput;
 
 
 /**
@@ -27,7 +27,7 @@ class ColorInput extends TextInput
 	{
 		parent::__construct($label);
 		$this->addCondition(Form::FILLED)
-				->addRule(Form::PATTERN, 'Color must be in hex format.', self::PATTERN);
+				->addRule(Form::REGEXP, 'Color must be in hex format.', self::PATTERN);
 		$this->control->{'data-type'} = 'color';
 	}
 

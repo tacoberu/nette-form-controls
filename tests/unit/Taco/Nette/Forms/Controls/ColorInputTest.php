@@ -25,8 +25,8 @@ class ColorInputTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEmpty($input->getValue());
 		$this->assertFalse((bool) $input->getOption('rendered'));
-		$this->assertInstanceOf('Nette\Utils\Html', $input->control);
-		$this->assertEquals('<input type="text" name="foo" data-type="color" id="frm-foo" data-nette-rules=\'[{"op":":filled","rules":[{"op":":pattern","msg":"Color must be in hex format.","arg":"/^(#[0-9a-fA-F]{6})|transparent|inherit$/"}],"control":"foo"}]\'>', (string) $input->getControl());
+		$this->assertInstanceOf('Nette\Web\Html', $input->control);
+		$this->assertEquals('<input type="text" data-type="color" name="foo" id="frm-foo" value="" />', (string) $input->getControl());
 		$this->assertTrue((bool) $input->getOption('rendered'));
 
 		$form->validate();
@@ -45,8 +45,8 @@ class ColorInputTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals('#aaaaaa', $control->getValue());
 		$this->assertFalse((bool) $control->getOption('rendered'));
-		$this->assertInstanceOf('Nette\Utils\Html', $control->control);
-		$this->assertEquals('<input type="text" name="foo" data-type="color" id="frm-foo" data-nette-rules=\'[{"op":":filled","rules":[{"op":":pattern","msg":"Color must be in hex format.","arg":"/^(#[0-9a-fA-F]{6})|transparent|inherit$/"}],"control":"foo"}]\' value="#aaaaaa">', (string) $control->control);
+		$this->assertInstanceOf('Nette\Web\Html', $control->control);
+		$this->assertEquals('<input type="text" data-type="color" name="foo" id="frm-foo" value="#aaaaaa" />', (string) $control->control);
 		$this->assertTrue((bool) $control->getOption('rendered'));
 
 		$form->validate();
@@ -65,8 +65,8 @@ class ColorInputTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals('aaaaaa', $control->getValue());
 		$this->assertFalse((bool) $control->getOption('rendered'));
-		$this->assertInstanceOf('Nette\Utils\Html', $control->control);
-		$this->assertEquals('<input type="text" name="foo" data-type="color" id="frm-foo" data-nette-rules=\'[{"op":":filled","rules":[{"op":":pattern","msg":"Color must be in hex format.","arg":"/^(#[0-9a-fA-F]{6})|transparent|inherit$/"}],"control":"foo"}]\' value="aaaaaa">', (string) $control->control);
+		$this->assertInstanceOf('Nette\Web\Html', $control->control);
+		$this->assertEquals('<input type="text" data-type="color" name="foo" id="frm-foo" value="aaaaaa" />', (string) $control->control);
 		$this->assertTrue((bool) $control->getOption('rendered'));
 
 		$form->validate();

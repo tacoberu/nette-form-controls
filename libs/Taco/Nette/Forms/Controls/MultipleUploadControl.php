@@ -7,11 +7,12 @@
 namespace Taco\Nette\Forms\Controls;
 
 use Nette,
-	Nette\Utils\Html,
+	Nette\DateTime,
+	Nette\Web\Html,
 	Nette\Utils\Validators,
 	Nette\Forms\Form,
-	Nette\Forms\Controls\BaseControl,
-	Nette\Http\FileUpload;
+	Nette\Forms\FormControl as BaseControl,
+	Nette\Web\HttpUploadedFile as FileUpload;
 use Taco,
 	Taco\Nette\Http\FileUploaded,
 	Taco\Nette\Http\FileRemove;
@@ -150,15 +151,29 @@ class MultipleUploadControl extends BaseControl
 	{
 		$this->value = array();
 
-		$this->store->setId($this->getHttpData(Form::DATA_LINE, '[transaction]'));
+		$path = explode('[', strtr(str_replace(array('[]', ']'), '', $this->getHtmlName()), '.', '_'));
 
-		$newfiles = $this->getHttpData(Form::DATA_FILE, '[new][]');
+		$raw = Nette\ArrayTools::get($this->getForm()->getHttpData(), $path);
 
-		$uploadedFiles = $this->getHttpData(Form::DATA_LINE, '[uploaded][files][]');
-		$uploadedRemove = $this->getHttpData(Form::DATA_LINE, '[uploaded][remove][]');
+		//~ $this->store->setId($this->getHttpData(Form::DATA_LINE, '[transaction]'));
+		$this->store->setId($raw['transaction']);
 
-		$uploadingFiles = $this->getHttpData(Form::DATA_LINE, '[uploading][files][]');
-		$uploadingRemove = $this->getHttpData(Form::DATA_LINE, '[uploading][remove][]');
+		//~ $newfiles = $this->getHttpData(Form::DATA_FILE, '[new][]');
+		$newfiles = $raw['new'];
+		// @HACK
+		if ((count($newfiles) == 1) && ($newfiles[0]->error == UPLOAD_ERR_NO_FILE)) {
+			$newfiles = [];
+		}
+
+		//~ $uploadedFiles = $this->getHttpData(Form::DATA_LINE, '[uploaded][files][]');
+		//~ $uploadedRemove = $this->getHttpData(Form::DATA_LINE, '[uploaded][remove][]');
+		$uploadedFiles = $this->_selectHttpData($raw, '[uploaded][files][]', []);
+		$uploadedRemove = $this->_selectHttpData($raw, '[uploaded][remove][]', []);
+
+		//~ $uploadingFiles = $this->getHttpData(Form::DATA_LINE, '[uploading][files][]');
+		//~ $uploadingRemove = $this->getHttpData(Form::DATA_LINE, '[uploading][remove][]');
+		$uploadingFiles = $this->_selectHttpData($raw, '[uploading][files][]', []);
+		$uploadingRemove = $this->_selectHttpData($raw, '[uploading][remove][]', []);
 
 		// Promazávání existujících.
 		$this->uploaded = array();
@@ -206,6 +221,9 @@ class MultipleUploadControl extends BaseControl
 		$container = clone $this->control;
 		$parseTypeFunction = $this->parseType;
 
+		if ($this->value === Null) {
+			$this->value = array();
+		}
 		// Prvky nahrané už někde na druhé straně
 		foreach ($this->value as $item) {
 			if ($item->isCommited()) {
@@ -284,6 +302,25 @@ class MultipleUploadControl extends BaseControl
 			$form->getElementPrototype()->enctype = 'multipart/form-data';
 		}
 		parent::attached($form);
+	}
+
+
+
+	/**
+	 * Vybírá z pole konkrétní pod-klíč.
+	 * @param array $data
+	 * @param string $path '[uploaded][remove][]'
+	 * $param mixin $default Výsledek, pokud klíč není.
+	 */
+	private function _selectHttpData($data, $path, $default = False)
+	{
+		foreach (explode('][', trim($path, '[]')) as $key) {
+			$data = Nette\ArrayTools::get($data, $key);
+			if (empty($data)) {
+				return $default;
+			}
+		}
+		return $data;
 	}
 
 
@@ -467,7 +504,7 @@ class UploadStoreTemp extends Nette\Object implements UploadStore
 	function __construct($prefix = Null, $id = Null)
 	{
 		if ($prefix) {
-			Validators::assert($id, 'string:1..');
+			//~ Validators::assert($id, 'string:1..');
 			$this->prefix = $prefix;
 		}
 
@@ -484,7 +521,7 @@ class UploadStoreTemp extends Nette\Object implements UploadStore
 	 */
 	function setId($id)
 	{
-		Validators::assert($id, 'numeric:1..');
+		//~ Validators::assert($id, 'numeric:1..');
 		$this->id = (int)$id;
 	}
 
@@ -525,7 +562,8 @@ class UploadStoreTemp extends Nette\Object implements UploadStore
 	function append(FileUpload $file)
 	{
 		$path = $this->baseDir();
-		$path[] = $file->sanitizedName;
+		//~ $path[] = $file->sanitizedName;
+		$path[] = self::sanitizedName($file->name);
 		$path = implode(DIRECTORY_SEPARATOR, $path);
 
 		// Vytvořit, pokud neexistuje.
@@ -559,6 +597,13 @@ class UploadStoreTemp extends Nette\Object implements UploadStore
 	private function baseDir()
 	{
 		return array(sys_get_temp_dir(), $this->prefix . $this->getId());
+	}
+
+
+
+	private static function sanitizedName($m)
+	{
+		return trim(Nette\String::webalize($m, '.', FALSE), '.-');
 	}
 
 
