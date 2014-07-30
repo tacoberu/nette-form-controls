@@ -16,26 +16,22 @@
 namespace Taco\Nette\Forms\Controls;
 
 
-use Nette\DateTime,
-	Nette\Utils\Html,
+use Taco\Data\DateTime;
+use Nette\Utils\Html,
 	Nette\Forms\Helpers,
 	Nette\Forms\Form,
 	Nette\Forms\Controls\BaseControl;
 
 
 /**
+ * Přebírá a vrací objekt DateTime jako reprezentaci Datumu.
+ * Na straně formuláře se jedná o jeden element, volitelně odekorovaný javascriptem.
+ *
  * @author Martin Takáč <taco@taco-beru.name>
  * @credits David Grudl
  */
 class DateInputSingle extends BaseControl
 {
-
-	/**
-	 * Uložené hodnoty data.
-	 * @var string
-	 */
-	private $blob;
-
 
 	/**
 	 * Formát data.
@@ -55,7 +51,7 @@ class DateInputSingle extends BaseControl
 		if (isset($format)) {
 			$this->format = $format;
 		}
-		$this->addRule(array(__class__, 'validateDate'), 'Neplatné datum.');
+		$this->addRule(array(__class__, 'validateDate'), 'Invalid format of date.');
 	}
 
 
@@ -67,14 +63,11 @@ class DateInputSingle extends BaseControl
 	 */
 	public function setValue($value)
 	{
-		if ($value) {
-			$data = DateTime::from($value);
-			$this->blob = $data->format($this->format);
+		if ($value && $value instanceof \DateTime) {
+			$value = $value->format($this->format);
 		}
-		else {
-			$this->blob = Null;
-		}
-		return $this;
+
+		return parent::setValue($value);
 	}
 
 
@@ -84,18 +77,14 @@ class DateInputSingle extends BaseControl
 	 */
 	public function getValue()
 	{
-		return DateTime::createFromFormat($this->format, $this->blob);
-	}
+		$value = parent::getValue();
+		if (empty($value)) {
+			return Null;
+		}
 
-
-
-	/**
-	 * Mapování hondot z requestu od uživatele na control.
-	 * @return void
-	 */
-	public function loadHttpData()
-	{
-		$this->blob = $this->getHttpData(Form::DATA_LINE);
+		if (self::validateDate($this)) {
+			return DateTime::createFromFormat($this->format, $value);
+		}
 	}
 
 
@@ -105,14 +94,23 @@ class DateInputSingle extends BaseControl
 	 */
 	public function getControl()
 	{
-		$name = $this->getHtmlName();
-
-		return Html::el('input', array(
-					'name' => $name,
-					'value' => $this->formatValue($this->blob),
-					'size' => 12,
-					));
+		$input = parent::getControl();
+		$input->value = $this->value;
+		return $input;
 	}
+
+
+
+	/**
+	 * Is control filled?
+	 * @return bool
+	 */
+	public function isFilled()
+	{
+		$value = $this->value;
+		return $value !== NULL && $value !== array() && $value !== '';
+	}
+
 
 
 	/**
@@ -124,27 +122,15 @@ class DateInputSingle extends BaseControl
 	 */
 	public static function validateDate(self $control)
 	{
-		//	Value is correct
-		if ($control->getValue()) {
+		try {
+			DateTime::createFromFormat($control->format, $control->value);
 			return True;
 		}
-
-		//	Value is empty, this is correct
-		if (empty($control->blob)) {
-			return True;
+		catch (\Exception $e) {
+			return False;
 		}
-
-		return False;;
 	}
 
 
-
-	private function formatValue($blob)
-	{
-		if (isset($blob)) {
-			$date = new DateTime($blob);
-			return $date->format($this->format);
-		}
-	}
 
 }

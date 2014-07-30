@@ -39,6 +39,7 @@ class DateInputTest extends PHPUnit_Framework_TestCase
 		$form['foo'] = $m;
 
 		$this->assertNull($m->getValue());
+		$this->assertFalse((bool)$m->getOption('rendered'));
 		$this->assertInstanceOf('Nette\Utils\Html', $m->control);
 		$this->assertEquals('<div class="input">'
 				. '<input name="foo[day]" size="4" placeholder="day">'
@@ -46,8 +47,7 @@ class DateInputTest extends PHPUnit_Framework_TestCase
 				. '<input name="foo[year]" size="4" placeholder="year">'
 				. '</div>', (string)$m->control);
 
-//~ dump((string)$m->control);
-		//~ $this->assertEquals('hi', $m->getValue());
+		$this->assertTrue((bool)$m->getOption('rendered'));
 	}
 
 

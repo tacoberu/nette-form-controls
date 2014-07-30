@@ -32,17 +32,56 @@ class DateInputSingleTest extends PHPUnit_Framework_TestCase
 
 
 
-	function _testInputsLoadValue()
+	function testInputsLoadValue()
 	{
-		$form = new Form();
+		$form = $this->getMock("Nette\Forms\Form", array('getHttpData'));
 
-		$m = new DateInput();
-		//~ $m->value = new DateTime('2011-04-30');
-		$form['foo'] = $m;
+		$form->expects($this->at(0))
+			->method("getHttpData")
+			->with(Null, Null);
+		$form->expects($this->at(1))
+			->method("getHttpData")
+			->with(Form::DATA_TEXT, '')
+			->will($this->returnValue('2012-11-05'))
+			;
 
+		$m = new DateInputSingle();
+		$m->parent = $form;
 		$m->loadHttpData();
+		$m->validate();
 
-		dump($m->getValue());
+		$this->assertFalse($m->hasErrors());
+		$this->assertEquals('2012-11-05', $m->getValue()->format('Y-m-d'));
+		$this->assertEquals('<input name="" id="frm-" '
+				. 'data-nette-rules=\'[{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateDate","msg":"Invalid format of date."}]\' '
+				. 'value="2012-11-05">', (string)$m->control);
+	}
+
+
+
+	function testInputsLoadValueInvalid()
+	{
+		$form = $this->getMock("Nette\Forms\Form", array('getHttpData'));
+
+		$form->expects($this->at(0))
+			->method("getHttpData")
+			->with(Null, Null);
+		$form->expects($this->at(1))
+			->method("getHttpData")
+			->with(Form::DATA_TEXT, '')
+			->will($this->returnValue('abc'));
+
+		$m = new DateInputSingle();
+		$m->parent = $form;
+		$m->loadHttpData();
+		$m->validate();
+
+		$this->assertTrue($m->hasErrors());
+		$this->assertNull($m->getValue());
+		$this->assertEquals('<input name="" id="frm-" '
+				. 'data-nette-rules=\'[{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateDate","msg":"Invalid format of date."}]\' '
+				. 'value="abc">', (string)$m->control);
+		$this->assertEquals(array('Invalid format of date.'), $m->getErrors());
 	}
 
 
@@ -55,8 +94,9 @@ class DateInputSingleTest extends PHPUnit_Framework_TestCase
 		$m->value = new DateTime('2011-04-30');
 		$form['foo'] = $m;
 
+		$this->assertEquals('2011-04-30', $m->getValue()->format('Y-m-d'));
 		$this->assertInstanceOf('Nette\Utils\Html', $m->control);
-		$this->assertEquals('<input name="foo" value="2011-04-30" size="12">', (string)$m->control);
+		$this->assertEquals('<input name="foo" id="frm-foo" data-nette-rules=\'[{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateDate","msg":"Invalid format of date."}]\' value="2011-04-30">', (string)$m->control);
 	}
 
 

@@ -52,7 +52,7 @@ class DateInput extends BaseControl
 	{
 		parent::__construct($label);
 		$this->style = $style;
-		$this->addRule(array(__class__, 'validateDate'), 'Neplatné datum.');
+		$this->addRule(array(__class__, 'validateDate'), 'Invalid format of date.');
 	}
 
 
@@ -108,6 +108,7 @@ class DateInput extends BaseControl
 	 */
 	public function getControl()
 	{
+		$this->setOption('rendered', True);
 		switch ($this->style) {
 			case self::STYLE_SELECTS:
 				return $this->makeControlWithSelects();
