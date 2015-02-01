@@ -20,8 +20,6 @@ use Nette;
 
 /**
  * Soubor ke smazání.
- * 
- * @author Martin Takáč <taco@taco-beru.name>
  */
 class FileRemove extends Nette\Object
 {

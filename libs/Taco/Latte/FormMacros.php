@@ -9,7 +9,7 @@
  *
  * PHP version 5.3
  *
- * @author     Martin Takáč (martin@takac.name)
+ * @author Martin Takáč (martin@takac.name)
  */
 
 
@@ -27,8 +27,8 @@ use Latte,
  *
  * - {errors name}
  *
- * @author		Martin Takáč <taco@taco-beru.name>
- * @credits 	David Grudl
+ * @author      Martin Takáč <taco@taco-beru.name>
+ * @credits     David Grudl
  */
 class FormMacros extends Latte\Macros\MacroSet
 {
