@@ -26,8 +26,7 @@ use Nette,
  *
  * - {errors name}
  *
- * @author		Martin Takáč <taco@taco-beru.name>
- * @credits 	David Grudl
+ * @credits David Grudl
  */
 class FormMacros extends Nette\Latte\Macros\MacroSet
 {
@@ -51,8 +50,8 @@ class FormMacros extends Nette\Latte\Macros\MacroSet
 		}
 		$name = array_shift($words);
 		$res = $writer->write(
-				($name[0] === '$' 
-						? '$_input = is_object(%0.word) ? %0.word : $_form[%0.word]; echo implode(", ", $_input)' 
+				($name[0] === '$'
+						? '$_input = is_object(%0.word) ? %0.word : $_form[%0.word]; echo implode(", ", $_input)'
 						: 'echo implode(", ", $_form[%0.word]->errors)'),
 				$name
 				);
