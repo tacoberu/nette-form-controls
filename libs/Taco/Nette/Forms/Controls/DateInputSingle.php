@@ -41,6 +41,18 @@ class DateInputSingle extends BaseControl
 
 
 	/**
+	 * @var DateTime
+	 */
+	private $start;
+
+
+	/**
+	 * @var DateTime
+	 */
+	private $end;
+
+
+	/**
 	 * @param string
 	 * @param string
 	 * @throws \InvalidArgumentException
@@ -52,6 +64,7 @@ class DateInputSingle extends BaseControl
 			$this->format = $format;
 		}
 		$this->addRule(array(__class__, 'validateDate'), 'Invalid format of date.');
+		$this->addRule(array(__class__, 'validateRange'), 'Invalid range of date.');
 	}
 
 
@@ -97,6 +110,12 @@ class DateInputSingle extends BaseControl
 		$input = parent::getControl();
 		$input->value = $this->value;
 		$input->data['date-format'] = self::formatAsBootstrapLike($this->format);
+		if ($this->start) {
+			$input->data['date-start-date'] = $this->start->format($this->format);
+		}
+		if ($this->end) {
+			$input->data['date-end-date'] = $this->end->format($this->format);
+		}
 		$input->data['widget'] = "datepicker";
 		return $input;
 	}
@@ -111,6 +130,27 @@ class DateInputSingle extends BaseControl
 	{
 		$value = $this->value;
 		return $value !== NULL && $value !== array() && $value !== '';
+	}
+
+
+
+	/**
+	 * @return bool
+	 */
+	public function setStart(\DateTime $val)
+	{
+		$this->start = $val;
+	}
+
+
+
+	/**
+	 * Is control filled?
+	 * @return bool
+	 */
+	public function setEnd(\DateTime $val)
+	{
+		$this->end = $val;
 	}
 
 
@@ -132,6 +172,33 @@ class DateInputSingle extends BaseControl
 			return False;
 		}
 	}
+
+
+
+	/**
+	 * @param self $control
+	 *
+	 * @return bool
+	 */
+	public static function validateRange(self $control)
+	{
+		try {
+			if (! $val = DateTime::createFromFormat($control->format, $control->value)) {
+				return True;
+			}
+			if ($control->start && $control->start > $val) {
+				return False;
+			}
+			if ($control->end && $control->end < $val) {
+				return False;
+			}
+			return True;
+		}
+		catch (\Exception $e) {
+			return False;
+		}
+	}
+
 
 
 	/**
