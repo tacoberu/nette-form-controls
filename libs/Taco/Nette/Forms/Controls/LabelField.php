@@ -14,6 +14,7 @@ namespace Taco\Nette\Forms\Controls;
 use Nette\Utils\Html,
 	Nette\Forms\Form,
 	Nette\Forms\Controls\BaseControl;
+use Taco\Utils\Formaters;
 
 
 /**
@@ -29,6 +30,9 @@ class LabelField extends BaseControl
 
 	/** @var mixed unfiltered submitted value */
 	private $rawValue = '';
+
+	/** @var Formaters\Formater */
+	private $formater = Null;
 
 
 	/**
@@ -107,6 +111,14 @@ class LabelField extends BaseControl
 
 
 
+	function setFieldFormater(Formaters\Formater $formater)
+	{
+		$this->formater = $formater;
+		return $this;
+	}
+
+
+
 	/**
 	 * Loads HTTP data.
 	 * @return void
@@ -135,12 +147,22 @@ class LabelField extends BaseControl
 
 		$field = clone $this->field;
 		$field->id = $this->getHtmlId();
-		$field->setText($this->getRawValue());
+		$field->setText($this->format($this->getRawValue()));
 		$container->add($field);
 
 		return $container;
 	}
 
+
+
+	private function format($m)
+	{
+		if (empty($this->formater)) {
+			return $m;
+		}
+
+		return $this->formater->format($m);
+	}
 
 
 }
