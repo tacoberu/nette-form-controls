@@ -27,16 +27,6 @@ use Taco,
 class MultipleUploadControl extends BaseControl
 {
 
-	const EPOCH_START = 13866047000000;
-
-
-	/**
-	 * Identifikátor, pod kterým je evidována transakce.
-	 * @var int
-	 */
-	private $transaction;
-
-
 	/**
 	 * Seznam existujících nahraných souborů.
 	 * @var array
@@ -66,24 +56,34 @@ class MultipleUploadControl extends BaseControl
 
 
 	/**
-	 * Funkce pro zpracování mimetype na class
+	 * Helper for formating mime type class representation uploaded file.
 	 * @var function
 	 */
 	private $parseType;
 
 
 	/**
+	 * Úložiště uchovávající nahrávané soubory před tím, než se skutečně uloží.
+	 * Často to bude jen jiný adresář.
+	 *
+	 * @var UploadStore
+	 */
+	private $store;
+
+
+	/**
 	 * @param string
+	 * @param bool
+	 * @param UploadStore
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct($label = Null, $multiple = True)
+	function __construct($label = Null, $multiple = True, UploadStore $store = Null)
 	{
 		parent::__construct($label);
 		$this->multiple = True; //(bool) $multiple;
 		$this->control = Html::el('ul', array(
 				'class' => 'file-uploader',
 				));
-		$this->transaction = (int) (microtime(True) * 10000) - self::EPOCH_START;
 		$this->parseType = function ($s)
 		{
 			if (empty($s)) {
@@ -93,16 +93,18 @@ class MultipleUploadControl extends BaseControl
 			$p = explode('/', $s, 2);
 			return $p[0];
 		};
+
+		$this->store = (!empty($store)) ? $store : new UploadStoreTemp();
 	}
 
 
 
 	/**
-	 * Set function for formating mime type class
+	 * Set function for formating mime type class representation uploaded file.
 	 *
 	 * @param function
 	 */
-	public function setMimeTypeClassFunction($fce)
+	function setMimeTypeClassFunction($fce)
 	{
 		$this->parseType = $fce;
 	}
@@ -114,7 +116,7 @@ class MultipleUploadControl extends BaseControl
 	 *
 	 * @param array of Taco\Nette\Forms\Controls\File $values
 	 */
-	public function setValue($values)
+	function setValue($values)
 	{
 		$this->value = array();
 		if ($values && is_array($values)) {
@@ -131,7 +133,7 @@ class MultipleUploadControl extends BaseControl
 	 * Returning values.
 	 * @return array of Taco\Nette\Http\FileUploaded | Nette\Http\FileUpload
 	 */
-	public function getValue()
+	function getValue()
 	{
 		return array_merge($this->uploaded, $this->remove, (array)$this->value);
 	}
@@ -143,11 +145,11 @@ class MultipleUploadControl extends BaseControl
 	 *
 	 * @return void
 	 */
-	public function loadHttpData()
+	function loadHttpData()
 	{
 		$this->value = array();
 
-		$this->transaction = $this->getHttpData(Form::DATA_LINE, '[transaction]');
+		$this->store->id = $this->getHttpData(Form::DATA_LINE, '[transaction]');
 
 		$newfiles = $this->getHttpData(Form::DATA_FILE, '[new][]');
 
@@ -180,7 +182,7 @@ class MultipleUploadControl extends BaseControl
 		// Ty, co přišli v pořádku, tak uložit do transakce, co nejsou v pořádku zahodit a oznámit neuspěch.
 		foreach ($newfiles as $file) {
 			if ($file->isOk()) {
-				$this->value[] = self::storeToTransaction($this->transaction, $file);
+				$this->value[] = $this->store->append($file);
 			}
 			else {
 				$this->addError(self::formatError($file));
@@ -195,7 +197,7 @@ class MultipleUploadControl extends BaseControl
 	 *
 	 * @return Nette\Utils\Html
 	 */
-	public function getControl()
+	function getControl()
 	{
 		$name = $this->getHtmlName();
 
@@ -242,7 +244,7 @@ class MultipleUploadControl extends BaseControl
 				->add(Html::el('input', array(
 						'type' => 'hidden',
 						'name' => $name . '[transaction]',
-						'value' => $this->transaction,
+						'value' => $this->store->id,
 						)))
 						);
 	}
@@ -284,54 +286,6 @@ class MultipleUploadControl extends BaseControl
 	private static function assertUploadesFile(Taco\Nette\Http\FileUploaded $value)
 	{
 		return $value;
-	}
-
-
-
-	/**
-	 * První přesunutí do adresáře který reprezentuje transakci.
-	 *
-	 * @param string id Identifikátor transakce.
-	 * @param Nette\Http\FileUpload $file Soubor do transakce.
-	 *
-	 * @return Soubor v transakci
-	 */
-	private static function storeToTransaction($id, Nette\Http\FileUpload $file)
-	{
-		Validators::assert($id, 'string');
-
-		$path = array(sys_get_temp_dir(), 'upload-' . $id, $file->sanitizedName);
-		$path = implode(DIRECTORY_SEPARATOR, $path);
-
-		// Vytvořit, pokud neexistuje
-		$dir = dirname($path);
-		if (! file_exists($dir)) {
-			mkdir($dir, 0777, True);
-		}
-
-		$file->move($path);
-		return new FileUploaded($file->temporaryFile, $file->contentType, $file->name);
-	}
-
-
-
-	/**
-	 * Odstranění adresáře s transakcí.
-	 *
-	 * @param string id Identifikátor transakce.
-	 */
-	private static function removeToTransaction($id)
-	{
-		Validators::assert($id, 'string');
-
-		$dir = array(sys_get_temp_dir(), 'upload-' . $id);
-		$dir = implode(DIRECTORY_SEPARATOR, $dir);
-
-		// Vytvořit, pokud neexistuje
-		if (file_exists($dir)) {
-			$fs = new Filesystem();
-			$fs->remove($dir);
-		}
 	}
 
 
@@ -414,7 +368,141 @@ class MultipleUploadControl extends BaseControl
 		return $file;
 	}
 
+}
 
 
+
+/**
+ * Úložiště uchovávající nahrávané soubory před tím, než se skutečně uloží.
+ */
+interface UploadStore
+{}
+
+
+
+/**
+ * Úložiště uchovávající nahrávané soubory před tím, než se skutečně uloží.
+ * V tomto případě to bude jen jiný adresář.
+ */
+class UploadStoreTemp extends Nette\Object implements UploadStore
+{
+
+	/**
+	 * Toto odečítáme od NOW(), aby ta cifra nebyla tak velká.
+	 */
+	const EPOCH_START = 13866047000000;
+
+	/**
+	 * Řetězec, jakým se bude prefixovat adresář pro uložení souborů.
+	 * "/tmp/upload-669932181976"
+	 */
+	const PREFIX = 'upload-';
+
+
+	/**
+	 * "/tmp/upload-669932181976"
+	 */
+	private $prefix = self::PREFIX;
+
+
+	/**
+	 * Jedinečný identifikátor, pod kterým je evidována transakce.
+	 * @var int
+	 */
+	private $id;
+
+
+	/**
+	 * @param string Řetězec, jakým se bude prefixovat adresář pro uložení souborů.
+	 * @param int id Identifikátor existující transakce. Není-li uveden, je vygenerován jedinečný.
+	 */
+	function __construct($prefix = Null, $id = Null)
+	{
+		if ($prefix) {
+			Validators::assert($id, 'string:1..');
+			$this->prefix = $prefix;
+		}
+
+		if ($id) {
+			$this->setId($id);
+		}
+	}
+
+
+
+	/**
+	 * Jedinečný identifikátor, pod kterým je evidována transakce.
+	 * @param int
+	 */
+	function setId($id)
+	{
+		Validators::assert($id, 'numeric:1..');
+		$this->id = (int)$id;
+	}
+
+
+
+	/**
+	 * Jedinečný identifikátor, pod kterým je evidována transakce.
+	 * @return int
+	 */
+	function getId()
+	{
+		if (empty($this->id)) {
+			$this->id = (int) (microtime(True) * 10000) - self::EPOCH_START;
+		}
+		return $this->id;
+	}
+
+
+
+	/**
+	 * První přesunutí do adresáře který reprezentuje transakci.
+	 *
+	 * @param Nette\Http\FileUpload $file Soubor do transakce.
+	 *
+	 * @return Soubor v transakci
+	 */
+	function append(Nette\Http\FileUpload $file)
+	{
+		$path = $this->baseDir();
+		$path[] = $file->sanitizedName;
+		$path = implode(DIRECTORY_SEPARATOR, $path);
+
+		// Vytvořit, pokud neexistuje.
+		$dir = dirname($path);
+		if (! file_exists($dir)) {
+			mkdir($dir, 0777, True);
+		}
+
+		$file->move($path);
+		return new FileUploaded($file->temporaryFile, $file->contentType, $file->name);
+	}
+
+
+
+	/**
+	 * Odstranění adresáře s transakcí.
+	 */
+	function destroy()
+	{
+		$dir = implode(DIRECTORY_SEPARATOR, $this->baseDir());
+
+		// Pokud neexistuje, smazat, včetně pod adresářů.
+		if (file_exists($dir)) {
+			$fs = new Filesystem();
+			$fs->remove($dir);
+		}
+	}
+
+
+
+	/**
+	 * @return array
+	 */
+	private function baseDir()
+	{
+		return array(sys_get_temp_dir(), $this->prefix . $this->getId());
+	}
 
 }
