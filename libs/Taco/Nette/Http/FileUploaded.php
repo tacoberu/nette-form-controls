@@ -1,15 +1,9 @@
 <?php
 /**
- * This file is part of the Taco Projects.
- *
- * Copyright (c) 2004, 2013 Martin Takáč (http://martin.takac.name)
+ * Copyright (c) 2004, 2016 Martin Takáč (http://martin.takac.name)
  *
  * For the full copyright and license information, please view
  * the file LICENCE that was distributed with this source code.
- *
- * PHP version 5.3
- *
- * @author     Martin Takáč (martin@takac.name)
  */
 
 namespace Taco\Nette\Http;
@@ -19,6 +13,8 @@ use Nette;
 
 
 /**
+ * Nahraný, nebo nahrávání soubor.
+ *
  * @author Martin Takáč <taco@taco-beru.name>
  */
 class FileUploaded extends Nette\Object
@@ -26,18 +22,21 @@ class FileUploaded extends Nette\Object
 
 
 	/**
+	 * @sample "mp16.jpg"
 	 * @var string
 	 */
 	private $name;
 
 
 	/**
+	 * @sample "/tmp/upload-669965256695/mp16.jpg"
 	 * @var string
 	 */
 	private $path;
 
 
 	/**
+	 * @sample "image/jpeg"
 	 * @var string
 	 */
 	private $type;
