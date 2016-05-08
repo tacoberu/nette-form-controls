@@ -16,7 +16,7 @@
 namespace Taco\Nette\Forms\Controls;
 
 
-use Nette\DateTime,
+use Nette\Utils\DateTime,
 	Nette\Utils\Html,
 	Nette\Forms\Helpers,
 	Nette\Forms\Form,

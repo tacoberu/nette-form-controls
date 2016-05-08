@@ -10,7 +10,6 @@ namespace Taco\Nette\Forms\Controls;
 
 
 use Nette,
-	Nette\DateTime,
 	Nette\Utils\Html,
 	Nette\Utils\Validators,
 	Nette\Forms\Form,
