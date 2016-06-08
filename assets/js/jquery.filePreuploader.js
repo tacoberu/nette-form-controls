@@ -57,12 +57,11 @@ if (jQuery)(function($) {
 		 *
 		 * @this Window
 		 * @param self DOMElement
-		 * @param context instance pluginu ?/ configuration this instance 
+		 * @param context instance pluginu ?/ configuration this instance
 		 */
-		function init(self, context) 
+		function init(self, context)
 		{
 			context.spinnerUrl || $.error("Unused require option 'spinnerUrl'.");
-			context.snippet || $.error("Unused require option 'snippet'.");
 
 			var m = $(self);
 
@@ -77,7 +76,7 @@ if (jQuery)(function($) {
 				.on('change', function() {
 				context.onChange(self);
 			});
-			
+
 			//	Hide remove item
 			$(m).find(':checkbox')
 				.on('change', function() {
@@ -91,12 +90,12 @@ if (jQuery)(function($) {
 
             //  Auto send via special button.
             if (context.autoSubmitBy) {
-				$(m).parent()
+				$(m).parents('form')
 					.find(assertEmpty(context.autoSubmitBy, context.autoSubmitBy))
 					.css({
-							'visibility': 'hidden',
-							'position' : 'absolute'
-							});
+						'visibility': 'hidden',
+						'position' : 'absolute'
+					});
 			}
 
 			return self;
@@ -106,9 +105,9 @@ if (jQuery)(function($) {
 
 		/**
 		 * Construct Function
-		 * 
-		 * @this jQuerySelector 
-		 * @param string | object method 
+		 *
+		 * @this jQuerySelector
+		 * @param string | object method
 		 */
 		function filePreuploader(method)
 		{
@@ -146,7 +145,6 @@ if (jQuery)(function($) {
 
 
 
-		
 		/**
 		 * Handle event for change file input.
 		 *
@@ -156,14 +154,31 @@ if (jQuery)(function($) {
 		filePreuploader.prototype.onChange = function(component)
 		{
             var form = $(component).parents('form'),
-				context = this,
-				iframe = $('<iframe/>', {
+				context = this;
+
+            //  Auto send via special button.
+            if (this.autoSubmitBy) {
+				form.find(context.uploadWrapper + ' :file')
+					.parents('li.file')
+					.css({
+						'background-image': 'url("' + context.spinnerUrl + '")',
+						'background-position': 'center',
+						'background-repeat': 'no-repeat'
+					});
+				form.find(assertEmpty(this.autoSubmitBy, this.autoSubmitBy)).click();
+			}
+
+			if ( ! context.snippet) {
+				return;
+			}
+
+            var iframe = $('<iframe/>', {
 					'id': context.uploaderName,
 					'name': context.uploaderName,
 					'style': 'display: none',
 					'width': 500,
 					'height': 500
-					});
+				});
 
             //  Data via iframe
             form.attr('target', this.uploaderName);
@@ -173,7 +188,7 @@ if (jQuery)(function($) {
             $('#' + this.uploaderName).load(function() {
 
 				form.attr('target', null);
-				
+
 				//  Replace original content by from server.
 				assertEmpty(form.find(context.snippet), context.snippet)
 					.html($(context.snippet, getDocumentFromWindow(this)).html())
@@ -201,18 +216,6 @@ if (jQuery)(function($) {
 						});
 					});
 			});
-
-            //  Auto send via special button.
-            if (this.autoSubmitBy) {
-				form.find(context.uploadWrapper + ' :file')
-					.parents('li.file')
-					.css({
-						'background-image': 'url("' + context.spinnerUrl + '")',
-						'background-position': 'center',
-						'background-repeat': 'no-repeat'
-						});
-				form.find(assertEmpty(this.autoSubmitBy, this.autoSubmitBy)).click();
-			}
 		}
 
 
