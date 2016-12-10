@@ -1,20 +1,10 @@
 <?php
 /**
- * This file is part of the Taco Projects.
- *
- * Copyright (c) 2004, 2013 Martin Takáč (http://martin.takac.name)
- *
- * For the full copyright and license information, please view
- * the file LICENCE that was distributed with this source code.
- *
- * PHP version 5.3
- *
- * @author     Martin Takáč (martin@takac.name)
+ * Copyright (c) since 2004 Martin Takáč (http://martin.takac.name)
+ * @license   https://opensource.org/licenses/MIT MIT
  */
 
-
 namespace Taco\Nette\Forms\Controls;
-
 
 use Taco\Data\DateTime;
 use Nette\Utils\Html,
@@ -27,7 +17,7 @@ use Nette\Utils\Html,
  * Přebírá a vrací objekt DateTime jako reprezentaci Datumu.
  * Na straně formuláře se jedná o jeden element, volitelně odekorovaný javascriptem.
  *
- * @author Martin Takáč <taco@taco-beru.name>
+ * @author Martin Takáč <martin@takac.name>
  * @credits David Grudl
  */
 class DateTimeInputSingle extends BaseControl

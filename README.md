@@ -11,4 +11,4 @@ Use in config.neon:
   nette
     latte:
       macros:
-        - Taco\Nette\Latte\FormMacros::install
+        - Taco\Latte\FormMacros::install
