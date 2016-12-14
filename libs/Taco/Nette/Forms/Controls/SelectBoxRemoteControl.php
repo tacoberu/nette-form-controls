@@ -12,6 +12,7 @@ use Nette\Application\ISignalReceiver;
 use Nette\Application\PresenterComponentReflection;
 use Nette\Application\JsonResponse;
 use InvalidArgumentException;
+use Taco\Nette\Forms\QueryModel;
 
 
 /**
@@ -48,15 +49,9 @@ class SelectBoxRemoteControl extends Forms\SelectBox implements ISignalReceiver
 
 
 	/**
-	 * @var calback(term:string, page:numeric, pageSize:numeric) -> {total:numeric, items:array of {id:string, label:string}}
+	 * @var QueryModel
 	 */
-	private $dataquery;
-
-
-	/**
-	 * @var calback(id:string) -> {id:string, label:string}
-	 */
-	private $dataread;
+	private $model;
 
 
 	/** @var {id:string, label:string} */
@@ -68,14 +63,24 @@ class SelectBoxRemoteControl extends Forms\SelectBox implements ISignalReceiver
 	 * @param calback(term:string, page:numeric, pageSize:numeric) -> {total:numeric, items:array of {id:string, label:string}}
 	 * @param calback(id:string) -> {id:string, label:string}
 	 */
-	function __construct($label = NULL, $dataquery, $dataread, $pageSize = NULL)
+	function __construct(QueryModel $model, $label = NULL, $pageSize = NULL)
 	{
 		parent::__construct($label);
-		$this->dataquery = $dataquery;
-		$this->dataread = $dataread;
+		$this->model = $model;
 		if ($pageSize) {
 			$this->pageSize = (int) $pageSize;
 		}
+	}
+
+
+
+	/**
+	 * @param int $val Set optional PageSize
+	 */
+	function setPageSize($val)
+	{
+		$this->pageSize = (int) $val;
+		return $this;
 	}
 
 
@@ -100,8 +105,7 @@ class SelectBoxRemoteControl extends Forms\SelectBox implements ISignalReceiver
 			$page = 1;
 		}
 
-		$fn = $this->dataquery;
-		$payload = $fn($term, $page, $pageSize);
+		$payload = $this->model->range($term, $page, $pageSize);
 
 		// Zda existuje další záznam.
 		$payload->isMoreResults = ($page * $pageSize <= $payload->total);
@@ -219,8 +223,7 @@ class SelectBoxRemoteControl extends Forms\SelectBox implements ISignalReceiver
 	 */
 	private function fetchOne($id)
 	{
-		$fn = $this->dataread;
-		if ($value = $fn($id)) {
+		if ($value = $this->model->read($id)) {
 			return (array) $value;
 		}
 		return NULL;
