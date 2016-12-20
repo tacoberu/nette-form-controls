@@ -43,6 +43,9 @@ jQuery(function($) {
 			this._createAutocomplete();
 
 			this.input.data("autocomplete")._renderItem = this._renderItem;
+			this.input.data("autocomplete")._renderMenu = function (ul, items) {
+				return self._renderMenu(this, ul, items);
+			}
 
 			// Registrace událostí.
 			this.button.on( "click", function() {
@@ -62,6 +65,41 @@ jQuery(function($) {
 
 			this.button.on( "mousedown", function() {
 				wasOpen = self.input.autocomplete( "widget" ).is( ":visible" );
+			});
+		},
+
+		// Vykreslení menu
+		_renderMenu: function (menu, ul, items) {
+			function isScrollbarBottom(container) {
+				var height = container.outerHeight();
+				var scrollHeight = container[0].scrollHeight;
+				var scrollTop = container.scrollTop();
+				if (scrollTop >= scrollHeight - (height * 2)) {
+					return true;
+				}
+				return false;
+			};
+
+			//remove scroll event to prevent attaching multiple scroll events to one container element
+			$(ul).unbind("scroll");
+
+			var self = this;
+			var pages = Math.ceil(self.total / self.options.pageSize);
+
+			if (pages > 1 && pages >= (self.page || 1)) {
+				$(ul).scroll(function () {
+					if (isScrollbarBottom($(ul)) && ! self.lock) {
+						self.page = (self.page || 1) + 1;
+						menu._search(self.term);
+					}
+				});
+			}
+
+			$.each(items, function (index, item) {
+				// Originální <option> nechceme vykreslovat protože by nám kazil řadu.
+				if ($(item.option).attr('rel') != 'original') {
+					menu._renderItem(ul, item);
+				}
 			});
 		},
 
@@ -139,6 +177,30 @@ jQuery(function($) {
 						}
 					}
 				});
+
+			// Nastavení výšky pro AJAXem načítané.
+			var widget = this.input.autocomplete('widget');
+			widget.css({
+				'max-height': (this.options.pageSize - 1) * 24,
+				'overflow-y': 'auto'
+			});
+		},
+
+		// Source from <option>s of <select>
+		_modelIsOptions: function( request ) {
+			var matcher = new RegExp( $.ui.autocomplete.escapeRegex(request.term), "i" );
+			var decorator = new RegExp("(?![^&;]+;)(?!<[^<>]*)("
+				+ $.ui.autocomplete.escapeRegex(request.term)
+				+ ")(?![^<>]*>)(?![^&;]+;)", "gi");
+			return this.element.children( "option" ).map(function() {
+				var text = $( this ).text();
+				if ( this.value && ( ! request.term || matcher.test(text) ) )
+					return {
+						label: text.replace(decorator, "<strong>$1</strong>"),
+						value: text,
+						option: this
+					};
+			});
 		},
 
 		// Source from <option>s of <select>
@@ -165,12 +227,34 @@ jQuery(function($) {
 				+ ")(?![^<>]*>)(?![^&;]+;)", "gi");
 			var self = this;
 
+			// Reset vyhledávání, protože změna termu.
+			if (self.term != request.term) {
+				self.page = 1;
+			}
+			self.term = request.term;
+
+			self.lock = true;
 			$.get(this.options.sourceRemoteUrl, {
 				term: request.term,
-				page: 1,
+				page: this.page || 1,
 				pageSize: this.options.pageSize
 			}, function (data) {
-				self.element.empty();
+
+				// Vyprázdnit <select>, protože první stránka. Zvolená hodnota nemuí být mezi
+				// načtenými optiony. To by nám to resetovalo na první. Takže jej uchováme.
+				// Ale protože by nám tem překážel tak poznačíme, aby se nevykresloval. že nebude vidět
+				// nám nevadí, protože tam může být pak dvakrát, to když se donačte.
+				if ( ! self.page || self.page <= 1) {
+					var orig = self.element.val();
+					self.element.empty();
+					self.element.append($('<option/>', {
+						value: orig,
+						rel: "original"
+					}));
+				}
+
+				self.total = data.total;
+
 				// Přidat načtené <option>, aby je bylo možné selectovat.
 				for (var _i in data.items) {
 					data.items[_i].option = $('<option/>', {
@@ -180,25 +264,9 @@ jQuery(function($) {
 					self.element.append(data.items[_i].option);
 				}
 
-				if (data.term.length > 0) {
-					builder = function(x) {
-						return {
-							label: x.label.replace(decorator, "<strong>$1</strong>"),
-							value: x.label,
-							option: x.option
-						};
-					}
-				}
-				else {
-					builder = function(x) {
-						return {
-							label: x.label,
-							value: x.label,
-							option: x.option
-						};
-					}
-				}
-				response($.map(data.items, builder));
+				self.lock = false;
+
+				response(self._modelIsOptions(request));
 			});
 
 		},
