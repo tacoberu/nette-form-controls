@@ -149,7 +149,7 @@ class SelectBoxRemoteControl extends Forms\SelectBox implements ISignalReceiver
 	{
 		$path = explode('[', strtr(str_replace(array('[]', ']'), '', $this->getHtmlName()), '.', '_'));
 		$value = Nette\ArrayTools::get($this->getForm()->getHttpData(), $path);
-		if (($value === NULL) || (is_array($this->disabled) && isset($this->disabled[$value]))){
+		if (empty($value) || (is_array($this->disabled) && isset($this->disabled[$value]))){
 			$this->value = NULL;
 		}
 		else {
