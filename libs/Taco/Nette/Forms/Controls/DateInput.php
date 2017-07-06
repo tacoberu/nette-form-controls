@@ -120,19 +120,19 @@ class DateInput extends BaseControl
 		return Html::el('div', array(
 				'class' => array('input'),
 				))
-			->add(Html::el('input', array(
+			->addHtml(Html::el('input', array(
 					'name' => $name . '[day]',
 					'value' => $this->day,
 					'size' => 4,
 					'placeholder' => 'day',
 					)))
-			->add(Html::el('input', array(
+			->addHtml(Html::el('input', array(
 					'name' => $name . '[month]',
 					'value' => $this->month,
 					'size' => 4,
 					'placeholder' => 'month',
 					)))
-			->add(Html::el('input', array(
+			->addHtml(Html::el('input', array(
 					'name' => $name . '[year]',
 					'value' => $this->year,
 					'size' => 4,
@@ -155,17 +155,17 @@ class DateInput extends BaseControl
 		return Html::el('div', array(
 				'class' => array('input'),
 				))
-			->add(Helpers::createSelectBox(
+			->addHtml(Helpers::createSelectBox(
 					$days,
 					array('selected?' => $this->day)
 					)
 					->name($name . '[day]'))
-			->add(Helpers::createSelectBox(
+			->addHtml(Helpers::createSelectBox(
 					$months,
 					array('selected?' => $this->month)
 					)
 					->name($name . '[month]'))
-			->add(Html::el('input', array(
+			->addHtml(Html::el('input', array(
 					'name' => $name . '[year]',
 					'value' => $this->year,
 					'size' => 4,

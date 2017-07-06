@@ -99,14 +99,14 @@ class DateInputSingle extends BaseControl
 	{
 		$input = parent::getControl();
 		$input->value = $this->value;
-		$input->data['date-format'] = self::formatAsBootstrapLike($this->format);
+		$input->{'data-date-format'} = self::formatAsBootstrapLike($this->format);
 		if ($this->start) {
-			$input->data['date-start-date'] = $this->start->format($this->format);
+			$input->{'data-date-start-date'} = $this->start->format($this->format);
 		}
 		if ($this->end) {
-			$input->data['date-end-date'] = $this->end->format($this->format);
+			$input->{'data-date-end-date'} = $this->end->format($this->format);
 		}
-		$input->data['widget'] = "datepicker";
+		$input->{'data-widget'} = "datepicker";
 		return $input;
 	}
 
