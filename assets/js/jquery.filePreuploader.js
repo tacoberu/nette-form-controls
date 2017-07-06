@@ -59,7 +59,6 @@ if (jQuery)(function($) {
 		function init(self, context)
 		{
 			context.spinnerUrl || $.error("Unused require option 'spinnerUrl'.");
-			context.snippet || $.error("Unused require option 'snippet'.");
 
 			var m = $(self);
 
@@ -88,7 +87,7 @@ if (jQuery)(function($) {
 
 			//  Auto send via special button.
 			if (context.autoSubmitBy) {
-				$(m).parent()
+				$(m).parents('form')
 					.find(assertEmpty(context.autoSubmitBy, context.autoSubmitBy))
 					.css({
 						'visibility': 'hidden',
@@ -151,14 +150,7 @@ if (jQuery)(function($) {
 		filePreuploader.prototype.onChange = function(component)
 		{
 			var form = $(component).parents('form'),
-				context = this,
-				iframe = $('<iframe/>', {
-					'id': context.uploaderName,
-					'name': context.uploaderName,
-					'style': 'display: none',
-					'width': 500,
-					'height': 500
-				});
+				context = this;
 
 			//  Auto send via special button.
 			if (this.autoSubmitBy) {
@@ -171,6 +163,18 @@ if (jQuery)(function($) {
 					});
 				form.find(assertEmpty(this.autoSubmitBy, this.autoSubmitBy)).click();
 			}
+
+			if ( ! context.snippet) {
+				return;
+			}
+
+			var iframe = $('<iframe/>', {
+					'id': context.uploaderName,
+					'name': context.uploaderName,
+					'style': 'display: none',
+					'width': 500,
+					'height': 500
+				});
 
 			//  Data via iframe
 			form.attr('target', this.uploaderName);
