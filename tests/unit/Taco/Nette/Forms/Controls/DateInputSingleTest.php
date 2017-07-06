@@ -43,8 +43,13 @@ class DateInputSingleTest extends PHPUnit_Framework_TestCase
 		$this->assertFalse($m->hasErrors());
 		$this->assertEquals('2012-11-05', $m->getValue()->format('Y-m-d'));
 		$this->assertEquals('<input name="" id="frm-" '
-				. 'data-nette-rules=\'[{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateDate","msg":"Invalid format of date."}]\' '
-				. 'value="2012-11-05" data-date-format="yyyy-mm-dd" data-widget="datepicker">', (string)$m->control);
+				. 'data-nette-rules=\'['
+					. '{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateDate","msg":"Invalid format of date."},'
+					. '{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateRange","msg":"Invalid range of date."}'
+					. ']\' '
+				. 'value="2012-11-05" '
+				. 'data-date-format="yyyy-mm-dd" '
+				. 'data-widget="datepicker">', (string)$m->control);
 	}
 
 
@@ -69,7 +74,10 @@ class DateInputSingleTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($m->hasErrors());
 		$this->assertNull($m->getValue());
 		$this->assertEquals('<input name="" id="frm-" '
-				. 'data-nette-rules=\'[{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateDate","msg":"Invalid format of date."}]\' '
+				. 'data-nette-rules=\'['
+					. '{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateDate","msg":"Invalid format of date."},'
+					. '{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateRange","msg":"Invalid range of date."}'
+					. ']\' '
 				. 'value="abc" data-date-format="yyyy-mm-dd" data-widget="datepicker">', (string)$m->control);
 		$this->assertEquals(array('Invalid format of date.'), $m->getErrors());
 	}
@@ -86,7 +94,14 @@ class DateInputSingleTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals('2011-04-30', $m->getValue()->format('Y-m-d'));
 		$this->assertInstanceOf('Nette\Utils\Html', $m->control);
-		$this->assertEquals('<input name="foo" id="frm-foo" data-nette-rules=\'[{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateDate","msg":"Invalid format of date."}]\' value="2011-04-30" data-date-format="yyyy-mm-dd" data-widget="datepicker">', (string)$m->control);
+		$this->assertEquals('<input name="foo" '
+				. 'id="frm-foo" '
+				. 'data-nette-rules=\'['
+					. '{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateDate","msg":"Invalid format of date."},'
+					. '{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateRange","msg":"Invalid range of date."}'
+					. ']\' '
+				. 'value="2011-04-30" '
+				. 'data-date-format="yyyy-mm-dd" data-widget="datepicker">', (string)$m->control);
 	}
 
 
