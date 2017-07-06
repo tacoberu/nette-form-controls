@@ -157,7 +157,7 @@ class MultipleUploadControl extends BaseControl
 		$uploadingFiles = $this->getHttpData(Form::DATA_LINE, '[uploading][files][]');
 		$uploadingRemove = $this->getHttpData(Form::DATA_LINE, '[uploading][remove][]');
 
-		//	Promazávání existujících.
+		// Promazávání existujících.
 		$this->uploaded = array();
 		foreach ($uploadedFiles as $item) {
 			$file = self::createFileUploadedFromValue($item);
@@ -168,7 +168,7 @@ class MultipleUploadControl extends BaseControl
 			$this->value[] = $file;
 		}
 
-		//	Promazávání transakce.
+		// Promazávání transakce.
 		foreach ($uploadingFiles as $item) {
 			if (! in_array($item, $uploadingRemove)) {
 				$file = self::createFileUploadedFromValue($item);
@@ -177,7 +177,7 @@ class MultipleUploadControl extends BaseControl
 			}
 		}
 
-		//	Ty, co přišli v pořádku, tak uložit do transakce, co nejsou v pořádku zahodit a oznámit neuspěch.
+		// Ty, co přišli v pořádku, tak uložit do transakce, co nejsou v pořádku zahodit a oznámit neuspěch.
 		foreach ($newfiles as $file) {
 			if ($file->isOk()) {
 				$this->value[] = self::storeToTransaction($this->transaction, $file);
@@ -232,7 +232,7 @@ class MultipleUploadControl extends BaseControl
 					);
 		}
 
-		//	Nový prvek
+		// Nový prvek
 		return $container->add(Html::el('li', array('class' => 'file new-file'))
 				->add(Html::el('input', array(
 						'type' => 'file',
@@ -303,7 +303,7 @@ class MultipleUploadControl extends BaseControl
 		$path = array(sys_get_temp_dir(), 'upload-' . $id, $file->sanitizedName);
 		$path = implode(DIRECTORY_SEPARATOR, $path);
 
-		//	Vytvořit, pokud neexistuje
+		// Vytvořit, pokud neexistuje
 		$dir = dirname($path);
 		if (! file_exists($dir)) {
 			mkdir($dir, 0777, True);
@@ -327,7 +327,7 @@ class MultipleUploadControl extends BaseControl
 		$dir = array(sys_get_temp_dir(), 'upload-' . $id);
 		$dir = implode(DIRECTORY_SEPARATOR, $dir);
 
-		//	Vytvořit, pokud neexistuje
+		// Vytvořit, pokud neexistuje
 		if (file_exists($dir)) {
 			$fs = new Filesystem();
 			$fs->remove($dir);
@@ -369,36 +369,36 @@ class MultipleUploadControl extends BaseControl
 	 */
 	private static function formatError($file)
 	{
-        switch ($file->error) {
+		switch ($file->error) {
 			case UPLOAD_ERR_OK:
 				throw \LogicException('No error.');
-            case UPLOAD_ERR_INI_SIZE:
-                $message = "The uploaded file exceeds the upload_max_filesize directive in php.ini";
-                break;
-            case UPLOAD_ERR_FORM_SIZE:
-                $message = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form";
-                break;
-            case UPLOAD_ERR_PARTIAL:
-                $message = "The uploaded file was only partially uploaded";
-                break;
-            case UPLOAD_ERR_NO_FILE:
-                $message = "No file was uploaded";
-                break;
-            case UPLOAD_ERR_NO_TMP_DIR:
-                $message = "Missing a temporary folder";
-                break;
-            case UPLOAD_ERR_CANT_WRITE:
-                $message = "Failed to write file to disk";
-                break;
-            case UPLOAD_ERR_EXTENSION:
-                $message = "File upload stopped by extension";
-                break;
-            default:
-                $message = "Unknown upload error";
-                break;
-        }
+			case UPLOAD_ERR_INI_SIZE:
+				$message = "The uploaded file exceeds the upload_max_filesize directive in php.ini";
+				break;
+			case UPLOAD_ERR_FORM_SIZE:
+				$message = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form";
+				break;
+			case UPLOAD_ERR_PARTIAL:
+				$message = "The uploaded file was only partially uploaded";
+				break;
+			case UPLOAD_ERR_NO_FILE:
+				$message = "No file was uploaded";
+				break;
+			case UPLOAD_ERR_NO_TMP_DIR:
+				$message = "Missing a temporary folder";
+				break;
+			case UPLOAD_ERR_CANT_WRITE:
+				$message = "Failed to write file to disk";
+				break;
+			case UPLOAD_ERR_EXTENSION:
+				$message = "File upload stopped by extension";
+				break;
+			default:
+				$message = "Unknown upload error";
+				break;
+		}
 
-        return "{$file->name}: {$message}";
+		return "{$file->name}: {$message}";
 	}
 
 

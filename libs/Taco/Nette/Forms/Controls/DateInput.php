@@ -184,12 +184,12 @@ class DateInput extends BaseControl
 	 */
 	public static function validateDate(self $control)
 	{
-		//	Value is correct
+		// Value is correct
 		if ($control->getValue()) {
 			return True;
 		}
 
-		//	Value is empty, this is correct
+		// Value is empty, this is correct
 		if (empty($control->day) && empty($control->month) && empty($control->year)) {
 			return True;
 		}
