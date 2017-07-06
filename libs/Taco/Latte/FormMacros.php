@@ -4,11 +4,12 @@
  * @license   https://opensource.org/licenses/MIT MIT
  */
 
-namespace Taco\Nette\Latte;
+namespace Taco\Latte;
 
-use Nette,
-	Nette\Latte\MacroNode,
-	Nette\Latte\PhpWriter;
+use Nette;
+use Latte,
+	Latte\MacroNode,
+	Latte\PhpWriter;
 
 
 /**
@@ -16,12 +17,13 @@ use Nette,
  *
  * - {errors name}
  *
+ * @author  Martin Takáč <martin@takac.name>
  * @credits David Grudl
  */
-class FormMacros extends Nette\Latte\Macros\MacroSet
+class FormMacros extends Latte\Macros\MacroSet
 {
 
-	static function install(Nette\Latte\Compiler $compiler)
+	static function install(Latte\Compiler $compiler)
 	{
 		$set = new static($compiler);
 		$set->addMacro('errors', array($set, 'macroErrors'));
