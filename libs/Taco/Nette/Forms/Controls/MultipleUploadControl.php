@@ -73,15 +73,16 @@ class MultipleUploadControl extends BaseControl
 	{
 		parent::__construct($label);
 		$this->multiple = True; //(bool) $multiple;
-		$this->addRule(array(__class__, 'validateDate'), 'Neplatný datum.');
-
+		$this->control = Html::el('ul', array(
+				'class' => 'file-uploader',
+				));
 		$this->transaction = (int) (microtime(True) * 10000) - self::EPOCH_START;
 	}
 
 
 
 	/**
-	 * Nastavení controlu ....
+	 * Set control's values.
 	 *
 	 * @param array of Taco\Nette\Forms\Controls\File $values
 	 */
@@ -99,7 +100,7 @@ class MultipleUploadControl extends BaseControl
 
 
 	/**
-	 * ...
+	 * Returning values.
 	 * @return array of Taco\Nette\Http\FileUploaded | Nette\Http\FileUpload
 	 */
 	public function getValue()
@@ -131,7 +132,7 @@ class MultipleUploadControl extends BaseControl
 		//	Promazávání existujících.
 		$this->uploaded = array();
 		foreach ($uploadedFiles as $item) {
-			$file = new FileUploaded($item);
+			$file = self::createFileUploadedFromValue($item);
 			$file->setCommited(True);
 			if (in_array($item, $uploadedRemove)) {
 				$file->setRemove(True);
@@ -142,7 +143,7 @@ class MultipleUploadControl extends BaseControl
 		//	Promazávání transakce.
 		foreach ($uploadingFiles as $item) {
 			if (! in_array($item, $uploadingRemove)) {
-				$file = new FileUploaded($item);
+				$file = self::createFileUploadedFromValue($item);
 				$file->setCommited(False);
 				$this->value[] = $file;
 			}
@@ -168,9 +169,9 @@ class MultipleUploadControl extends BaseControl
 	{
 		$name = $this->getHtmlName();
 
-		$container = Html::el('ul');
+		$container = clone $this->control;
 
-		//	Prvky nahrané už někde na druhé straně
+		// Prvky nahrané už někde na druhé straně
 		foreach ($this->value as $item) {
 			if ($item->isCommited()) {
 				$section = 'uploaded';
@@ -182,20 +183,20 @@ class MultipleUploadControl extends BaseControl
 			$container->add(Html::el('li', array('class' => "file {$section}-file"))
 					->add(Html::el('input', array(
 							'type' => 'hidden',
-							'value' => $item->path,
+							'value' => self::formatValue($item),
 							'name' => "{$name}[{$section}][files][]",
 							)))
 					->add(Html::el('input', array(
 							'type' => 'checkbox',
 							'checked' => ($item->isRemove()),
-							'value' => $item->path,
+							'value' => self::formatValue($item),
 							'name' => "{$name}[{$section}][remove][]",
 							'title' => strtr('Remove file: %{name}', array(
 									'%{name}' => $item->name
 									)),
 							)))
 					->add(Html::el('span', array(
-							'class' => array('file', $item->type),
+							'class' => array('file', self::parseType($item->contentType)),
 							))->setText($item->name))
 					);
 		}
@@ -301,6 +302,48 @@ class MultipleUploadControl extends BaseControl
 			$fs->remove($dir);
 		}
 	}
+
+
+
+	/**
+	 * @param string $s 'image/jpeg'
+	 * @return string 'image'
+	 */
+	private static function parseType($s)
+	{
+		if (empty($s)) {
+			return $s;
+		}
+
+		$p = explode('/', $s, 2);
+		return $p[0];
+	}
+
+
+
+	/**
+	 * @param Taco\Nette\Http\FileUploaded $s
+	 * @return string 'image'
+	 */
+	private static function formatValue($s)
+	{
+		return $s->contentType . '#' . $s->path;
+	}
+
+
+
+	/**
+	 * @param string $s 'image/jpeg#tasks/6s3qva8l/4728-05.jpg'
+	 * @return Taco\Nette\Http\FileUploaded $s
+	 */
+	private static function createFileUploadedFromValue($s)
+	{
+		$s = explode('#', $s, 2);
+		$file = new FileUploaded($s[1], $s[0]);
+		return $file;
+	}
+
+
 
 
 }

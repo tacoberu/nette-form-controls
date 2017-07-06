@@ -54,7 +54,7 @@ class FileUploaded extends Nette\Object
 	/**
 	 * @param string $path
 	 */
-	public function __construct($path, $type = 'unknow', $name = Null)
+	public function __construct($path, $type, $name = Null)
 	{
 		$this->path = $path;
 		$this->type = $type;
@@ -90,15 +90,6 @@ class FileUploaded extends Nette\Object
 	public function getPath()
 	{
 		return $this->path;
-	}
-
-
-	/**
-	 * @return string
-	 */
-	public function getContentType()
-	{
-		return $this->type;
 	}
 
 
@@ -148,7 +139,7 @@ class FileUploaded extends Nette\Object
 	/**
 	 * @return string
 	 */
-	public function getType()
+	public function getContentType()
 	{
 		return $this->type;
 	}
