@@ -36,7 +36,7 @@ class DateInputSingleTest extends PHPUnit_Framework_TestCase
 			;
 
 		$m = new DateInputSingle();
-		$m->parent = $form;
+		$m->setParent($form);
 		$m->loadHttpData();
 		$m->validate();
 
@@ -67,7 +67,7 @@ class DateInputSingleTest extends PHPUnit_Framework_TestCase
 			->will($this->returnValue('abc'));
 
 		$m = new DateInputSingle();
-		$m->parent = $form;
+		$m->setParent($form);
 		$m->loadHttpData();
 		$m->validate();
 
