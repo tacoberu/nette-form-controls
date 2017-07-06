@@ -212,9 +212,6 @@ class MultipleUploadControl extends BaseControl
 						'name' => $name . '[transaction]',
 						'value' => $this->transaction,
 						)))
-				->add(Html::el('span', array(
-						'class' => array('file', 'new-file'),
-						))->setText('Nevybráno'))
 						);
 	}
 
