@@ -7,14 +7,15 @@
 namespace Taco\Nette\Forms\Controls;
 
 use Nette,
-	Nette\DateTime,
 	Nette\Utils\Html,
 	Nette\Utils\Validators,
 	Nette\Forms\Form,
-	Nette\Forms\Controls\BaseControl;
+	Nette\Forms\Controls\BaseControl,
+	Nette\Http\FileUpload;
 use Taco,
 	Taco\Nette\Http\FileUploaded,
 	Taco\Nette\Http\FileRemove;
+use RuntimeException;
 
 
 /**
@@ -64,7 +65,7 @@ class MultipleUploadControl extends BaseControl
 
 	/**
 	 * Úložiště uchovávající nahrávané soubory před tím, než se skutečně uloží.
-	 * Často to bude jen jiný adresář.
+	 * Defaultně to je jen temp adresář, viz UploadStoreTemp
 	 *
 	 * @var UploadStore
 	 */
@@ -80,7 +81,7 @@ class MultipleUploadControl extends BaseControl
 	function __construct($label = Null, $multiple = True, UploadStore $store = Null)
 	{
 		parent::__construct($label);
-		$this->multiple = True; //(bool) $multiple;
+		$this->multiple = (bool) $multiple;
 		$this->control = Html::el('ul', array(
 				'class' => 'file-uploader',
 				));
@@ -149,7 +150,7 @@ class MultipleUploadControl extends BaseControl
 	{
 		$this->value = array();
 
-		$this->store->id = $this->getHttpData(Form::DATA_LINE, '[transaction]');
+		$this->store->setId($this->getHttpData(Form::DATA_LINE, '[transaction]'));
 
 		$newfiles = $this->getHttpData(Form::DATA_FILE, '[new][]');
 
@@ -172,7 +173,8 @@ class MultipleUploadControl extends BaseControl
 
 		// Promazávání transakce.
 		foreach ($uploadingFiles as $item) {
-			if (! in_array($item, $uploadingRemove)) {
+			list(, $filename) = explode('#', $item, 2);
+			if ( ! in_array($item, $uploadingRemove) && $this->store->exists($filename)) {
 				$file = self::createFileUploadedFromValue($item);
 				$file->setCommited(False);
 				$this->value[] = $file;
@@ -244,7 +246,7 @@ class MultipleUploadControl extends BaseControl
 				->add(Html::el('input', array(
 						'type' => 'hidden',
 						'name' => $name . '[transaction]',
-						'value' => $this->store->id,
+						'value' => $this->store->getId(),
 						)))
 						);
 	}
@@ -252,14 +254,17 @@ class MultipleUploadControl extends BaseControl
 
 
 	/**
-	 * Unused
-	 *
-	 * @param self $control
-	 * @return bool
+	 * Odstranění adresáře s transakcí.
 	 */
-	public static function validateDate(self $control)
+	function destroy()
 	{
-		return True;
+		$this->store->destroy();
+		$this->uploading = array();
+		foreach ($this->value as $i => $x) {
+			if ( ! $x->commited) {
+				unset($this->value[$i]);
+			}
+		}
 	}
 
 
@@ -376,7 +381,49 @@ class MultipleUploadControl extends BaseControl
  * Úložiště uchovávající nahrávané soubory před tím, než se skutečně uloží.
  */
 interface UploadStore
-{}
+{
+
+	/**
+	 * Jedinečný identifikátor, pod kterým je evidována transakce.
+	 * @param int
+	 */
+	function setId($id);
+
+
+
+	/**
+	 * Jedinečný identifikátor, pod kterým je evidována transakce.
+	 * @return int
+	 */
+	function getId();
+
+
+
+	/**
+	 * @param string Filename of uploaded file.
+	 * @return bool
+	 */
+	function exists($filename);
+
+
+
+	/**
+	 * Přesunutí do adresáře který reprezentuje transakci.
+	 *
+	 * @param Nette\Http\FileUpload $file Soubor do transakce.
+	 *
+	 * @return Soubor v transakci
+	 */
+	function append(FileUpload $file);
+
+
+
+	/**
+	 * Odstranění adresáře s transakcí.
+	 */
+	function destroy();
+
+}
 
 
 
@@ -391,6 +438,7 @@ class UploadStoreTemp extends Nette\Object implements UploadStore
 	 * Toto odečítáme od NOW(), aby ta cifra nebyla tak velká.
 	 */
 	const EPOCH_START = 13866047000000;
+
 
 	/**
 	 * Řetězec, jakým se bude prefixovat adresář pro uložení souborů.
@@ -457,13 +505,24 @@ class UploadStoreTemp extends Nette\Object implements UploadStore
 
 
 	/**
-	 * První přesunutí do adresáře který reprezentuje transakci.
+	 * @param string Filename of uploaded file.
+	 * @return bool
+	 */
+	function exists($filename)
+	{
+		return file_exists($filename);
+	}
+
+
+
+	/**
+	 * Přesunutí do adresáře který reprezentuje transakci.
 	 *
 	 * @param Nette\Http\FileUpload $file Soubor do transakce.
 	 *
 	 * @return Soubor v transakci
 	 */
-	function append(Nette\Http\FileUpload $file)
+	function append(FileUpload $file)
 	{
 		$path = $this->baseDir();
 		$path[] = $file->sanitizedName;
@@ -471,7 +530,7 @@ class UploadStoreTemp extends Nette\Object implements UploadStore
 
 		// Vytvořit, pokud neexistuje.
 		$dir = dirname($path);
-		if (! file_exists($dir)) {
+		if ( ! file_exists($dir)) {
 			mkdir($dir, 0777, True);
 		}
 
@@ -487,11 +546,8 @@ class UploadStoreTemp extends Nette\Object implements UploadStore
 	function destroy()
 	{
 		$dir = implode(DIRECTORY_SEPARATOR, $this->baseDir());
-
-		// Pokud neexistuje, smazat, včetně pod adresářů.
 		if (file_exists($dir)) {
-			$fs = new Filesystem();
-			$fs->remove($dir);
+			self::delete($dir);
 		}
 	}
 
@@ -503,6 +559,35 @@ class UploadStoreTemp extends Nette\Object implements UploadStore
 	private function baseDir()
 	{
 		return array(sys_get_temp_dir(), $this->prefix . $this->getId());
+	}
+
+
+
+	/**
+	 * Deletes a file or directory.
+	 * @return void
+	 * @throws RuntimeException
+	 */
+	private static function delete($path)
+	{
+		if (is_file($path) || is_link($path)) {
+			$func = DIRECTORY_SEPARATOR === '\\' && is_dir($path) ? 'rmdir' : 'unlink';
+
+			// @ is escalated to exception
+			if ( ! @$func($path)) {
+				throw new RuntimeException("Unable to delete '$path'.");
+			}
+		}
+		elseif (is_dir($path)) {
+			foreach (new \FilesystemIterator($path) as $item) {
+				static::delete($item->getPathname());
+			}
+
+			// @ is escalated to exception
+			if ( ! @rmdir($path)) {
+				throw new RuntimeException("Unable to delete directory '$path'.");
+			}
+		}
 	}
 
 }
