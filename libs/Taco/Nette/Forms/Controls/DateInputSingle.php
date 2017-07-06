@@ -86,6 +86,8 @@ class DateInputSingle extends BaseControl
 	{
 		$input = parent::getControl();
 		$input->value = $this->value;
+		$input->data['date-format'] = self::formatAsBootstrapLike($this->format);
+		$input->data['widget'] = "datepicker";
 		return $input;
 	}
 
@@ -122,5 +124,37 @@ class DateInputSingle extends BaseControl
 	}
 
 
+	/**
+	 * Format aceptance only the date format, combination of d, dd, m, mm, yy, yyy.
+	 * @param string
+	 * @return string
+	 */
+	private static function formatAsBootstrapLike($s)
+	{
+		return strtr($s, array(
+				// Day
+				'j' => 'd',  // Day of the month without leading zeros 1 to 31
+				'd' => 'dd', // Day of the month, 2 digits with leading zeros 01 to 31
+				//~ 'D A textual representation of a day, three letters Mon through Sun
+				//~ l (lowercase 'L') A full textual representation of the day of the week  Sunday through Saturday
+				//~ N ISO-8601 numeric representation of the day of the week (added in PHP 5.1.0) 1 (for Monday) through 7 (for Sunday)
+				//~ S  English ordinal suffix for the day of the month, 2 characters  st, nd, rd or th. Works well with j
+				//~ w  Numeric representation of the day of the week  0 (for Sunday) through 6 (for Saturday)
+				//~ z  The day of the year (starting from 0) 0 through 365
+				// Week
+				//~ W  ISO-8601 week number of year, weeks starting on Monday (added in PHP 4.1.0) Example: 42 (the 42nd week in the year)
+				// Month
+				//~ F  A full textual representation of a month, such as January or March January through December
+				'n' => 'm', // Numeric representation of a month, without leading zeros 1 through 12
+				'm' => 'mm', // Numeric representation of a month, with leading zeros 01 through 12
+				//~ M  A short textual representation of a month, three letters Jan through Dec
+				//~ t  Number of days in the given month 28 through 31
+				// Year
+				//~ L  Whether it's a leap year 1 if it is a leap year, 0 otherwise.
+				//~ o  ISO-8601 year number. This has the same value as Y, except that if the ISO week number (W) belongs to the previous or next year, that year is used instead. (added in PHP 5.1.0) Examples: 1999 or 2003
+				'y' => 'yy',   // A two digit representation of a year Examples: 99 or 03
+				'Y' => 'yyyy', // A full numeric representation of a year, 4 digits Examples: 1999 or 2003
+				));
+	}
 
 }
