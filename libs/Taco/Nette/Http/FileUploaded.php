@@ -40,13 +40,27 @@ class FileUploaded extends Nette\Object
 
 
 	/**
+	 * @var boolean
+	 */
+	private $commited = False;
+
+
+	/**
+	 * @var boolean
+	 */
+	private $remove = False;
+
+
+	/**
 	 * @param string $path
 	 */
-	public function __construct($path, $type = 'unknow')
+	public function __construct($path, $type = 'unknow', $name = Null)
 	{
 		$this->path = $path;
 		$this->type = $type;
-		$this->name = basename($path);
+		if (empty($this->name)) {
+			$this->name = basename($path);
+		}
 	}
 
 
@@ -64,10 +78,71 @@ class FileUploaded extends Nette\Object
 	/**
 	 * @return string
 	 */
+	public function getTemporaryFile()
+	{
+		return $this->path;
+	}
+
+
+	/**
+	 * @return string
+	 */
 	public function getPath()
 	{
 		return $this->path;
 	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getContentType()
+	{
+		return $this->type;
+	}
+
+
+
+	/**
+	 * @return boolean
+	 */
+	public function isCommited()
+	{
+		return $this->commited;
+	}
+
+
+
+	/**
+	 * @return boolean
+	 */
+	public function isRemove()
+	{
+		return $this->remove;
+	}
+
+
+
+	/**
+	 * @param boolean
+	 */
+	public function setCommited($m = True)
+	{
+		$this->commited = $m;
+		return $this;
+	}
+
+
+
+	/**
+	 * @param boolean
+	 */
+	public function setRemove($m = True)
+	{
+		$this->remove = $m;
+		return $this;
+	}
+
 
 
 	/**

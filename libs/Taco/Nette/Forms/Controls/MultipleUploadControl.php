@@ -41,7 +41,7 @@ class MultipleUploadControl extends BaseControl
 	 * Seznam existujících nahraných souborů.
 	 * @var array
 	 */
-	private $items = array();
+	private $uploaded = array();
 
 
 	/**
@@ -49,6 +49,13 @@ class MultipleUploadControl extends BaseControl
 	 * @var array
 	 */
 	private $remove = array();
+
+
+	/**
+	 * Seznam existujících nahraných souborů, které se ještě nezapsaly do modelu.
+	 * @var array
+	 */
+	private $uploading = array();
 
 
 	/**
@@ -80,10 +87,10 @@ class MultipleUploadControl extends BaseControl
 	 */
 	public function setValue($values)
 	{
-		$this->items = array();
+		$this->value = array();
 		if ($values && is_array($values)) {
 			foreach ($values as $value) {
-				$this->items[] = self::assertUploadesFile($value);
+				$this->value[] = self::assertUploadesFile($value)->setCommited(True);
 			}
 		}
 		return $this;
@@ -97,7 +104,7 @@ class MultipleUploadControl extends BaseControl
 	 */
 	public function getValue()
 	{
-		return array_merge($this->items, $this->remove, $this->value);
+		return array_merge($this->uploaded, $this->remove, (array)$this->value);
 	}
 
 
@@ -109,27 +116,43 @@ class MultipleUploadControl extends BaseControl
 	 */
 	public function loadHttpData()
 	{
-		$this->transaction = $this->getHttpData(Form::DATA_LINE, '[transaction]');
-		$files = $this->getHttpData(Form::DATA_FILE, '[new][]');
-		$items = $this->getHttpData(Form::DATA_LINE, '[exists][]');
-		$remove = $this->getHttpData(Form::DATA_LINE, '[remove][]');
-
-		//	Ty, co přišli v pořádku, tak uložit do transakce
 		$this->value = array();
-		foreach ($files as $file) {
-			if ($file->isOk()) {
-				$this->value[] = self::storeToTransaction($this->transaction, $file);
+
+		$this->transaction = $this->getHttpData(Form::DATA_LINE, '[transaction]');
+
+		$newfiles = $this->getHttpData(Form::DATA_FILE, '[new][]');
+
+		$uploadedFiles = $this->getHttpData(Form::DATA_LINE, '[uploaded][files][]');
+		$uploadedRemove = $this->getHttpData(Form::DATA_LINE, '[uploaded][remove][]');
+
+		$uploadingFiles = $this->getHttpData(Form::DATA_LINE, '[uploading][files][]');
+		$uploadingRemove = $this->getHttpData(Form::DATA_LINE, '[uploading][remove][]');
+
+		//	Promazávání existujících.
+		$this->uploaded = array();
+		foreach ($uploadedFiles as $item) {
+			$file = new FileUploaded($item);
+			$file->setCommited(True);
+			if (in_array($item, $uploadedRemove)) {
+				$file->setRemove(True);
+			}
+			$this->value[] = $file;
+		}
+
+		//	Promazávání transakce.
+		foreach ($uploadingFiles as $item) {
+			if (! in_array($item, $uploadingRemove)) {
+				$file = new FileUploaded($item);
+				$file->setCommited(False);
+				$this->value[] = $file;
 			}
 		}
 
-		//	Promazávání existujících.
-		$this->items = array();
-		foreach ($items as $item) {
-			if (in_array($item, $remove)) {
-				$this->remove[] = new FileRemove($item);
-			}
-			else {
-				$this->items[] = new FileUploaded($item);
+		//	Ty, co přišli v pořádku, tak uložit do transakce, co nejsou v pořádku zahodit a oznámit neuspěch.
+		//	@TODO oznámit neuspěch
+		foreach ($newfiles as $file) {
+			if ($file->isOk()) {
+				$this->value[] = self::storeToTransaction($this->transaction, $file);
 			}
 		}
 	}
@@ -145,39 +168,54 @@ class MultipleUploadControl extends BaseControl
 	{
 		$name = $this->getHtmlName();
 
-		$container = Html::el();
+		$container = Html::el('ul');
 
-		foreach ($this->items as $item) {
-			$container->add(Html::el('input', array(
-					'type' => 'hidden',
-					'value' => $item->path,
-					'name' => $name . '[exists][]',
-					)));
-			$container->add(Html::el('input', array(
-					'type' => 'checkbox',
-					'value' => $item->path,
-					'name' => $name . '[remove][]',
-					'title' => strtr('Remove file: %{name}', array(
-							'%{name}' => $item->name
-							)),
-					)));
-			$container->add(Html::el('span', array(
-					'class' => array('file', $item->type),
-					))->setText($item->name));
+		//	Prvky nahrané už někde na druhé straně
+		foreach ($this->value as $item) {
+			if ($item->isCommited()) {
+				$section = 'uploaded';
+			}
+			else {
+				$section = 'uploading';
+			}
+
+			$container->add(Html::el('li', array('class' => "file {$section}-file"))
+					->add(Html::el('input', array(
+							'type' => 'hidden',
+							'value' => $item->path,
+							'name' => "{$name}[{$section}][files][]",
+							)))
+					->add(Html::el('input', array(
+							'type' => 'checkbox',
+							'checked' => ($item->isRemove()),
+							'value' => $item->path,
+							'name' => "{$name}[{$section}][remove][]",
+							'title' => strtr('Remove file: %{name}', array(
+									'%{name}' => $item->name
+									)),
+							)))
+					->add(Html::el('span', array(
+							'class' => array('file', $item->type),
+							))->setText($item->name))
+					);
 		}
 
-		return $container
-			->add(Html::el('input', array(
-					'type' => 'file',
-					'name' => $name . '[new][]',
-					'multiple' => True, //$this->multiple,
-					)))
-			->add(Html::el('input', array(
-					'type' => 'hidden',
-					'name' => $name . '[transaction]',
-					'value' => $this->transaction,
-					)))
-			;
+		//	Nový prvek
+		return $container->add(Html::el('li', array('class' => 'file new-file'))
+				->add(Html::el('input', array(
+						'type' => 'file',
+						'name' => $name . '[new][]',
+						'multiple' => True, //$this->multiple,
+						)))
+				->add(Html::el('input', array(
+						'type' => 'hidden',
+						'name' => $name . '[transaction]',
+						'value' => $this->transaction,
+						)))
+				->add(Html::el('span', array(
+						'class' => array('file', 'new-file'),
+						))->setText('Nevybráno'))
+						);
 	}
 
 
@@ -242,7 +280,8 @@ class MultipleUploadControl extends BaseControl
 			mkdir($dir, 0777, True);
 		}
 
-		return $file->move($path);
+		$file->move($path);
+		return new FileUploaded($file->temporaryFile, $file->contentType, $file->name);
 	}
 
 
