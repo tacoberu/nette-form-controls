@@ -8,34 +8,31 @@
  */
 if (jQuery)(function($) {
 
-
-
 	/**
 	 * Plugin for ajax/iframe file upload.
 	 */
 	$.fn.filePreuploader = (function ()
 	{
 
-
-        /**
-         * From element WINDOW getting document
-         * @param WINDOW w
-         */
-        function getDocumentFromWindow(w)
-        {
-            if (w.contentDocument) {
-                return w.contentDocument;
-            }
-            else if (w.contentWindow) {
-                return w.contentWindow.document;
-            }
-            else if (w.document) {
-                return w.document;
-            }
-            else {
-                throw ('Nothing!');
-            }
-        }
+		/**
+		 * From element WINDOW getting document
+		 * @param WINDOW w
+		 */
+		function getDocumentFromWindow(w)
+		{
+			if (w.contentDocument) {
+				return w.contentDocument;
+			}
+			else if (w.contentWindow) {
+				return w.contentWindow.document;
+			}
+			else if (w.document) {
+				return w.document;
+			}
+			else {
+				throw ('Nothing!');
+			}
+		}
 
 
 
@@ -57,9 +54,9 @@ if (jQuery)(function($) {
 		 *
 		 * @this Window
 		 * @param self DOMElement
-		 * @param context instance pluginu ?/ configuration this instance 
+		 * @param context instance pluginu ?/ configuration this instance
 		 */
-		function init(self, context) 
+		function init(self, context)
 		{
 			context.spinnerUrl || $.error("Unused require option 'spinnerUrl'.");
 			context.snippet || $.error("Unused require option 'snippet'.");
@@ -77,7 +74,7 @@ if (jQuery)(function($) {
 				.on('change', function() {
 				context.onChange(self);
 			});
-			
+
 			//	Hide remove item
 			$(m).find(':checkbox')
 				.on('change', function() {
@@ -89,14 +86,14 @@ if (jQuery)(function($) {
 				context.onRemoveItem(self, $(this).parents('li.file'));
 			});
 
-            //  Auto send via special button.
-            if (context.autoSubmitBy) {
+			//  Auto send via special button.
+			if (context.autoSubmitBy) {
 				$(m).parent()
 					.find(assertEmpty(context.autoSubmitBy, context.autoSubmitBy))
 					.css({
-							'visibility': 'hidden',
-							'position' : 'absolute'
-							});
+						'visibility': 'hidden',
+						'position' : 'absolute'
+					});
 			}
 
 			return self;
@@ -106,9 +103,9 @@ if (jQuery)(function($) {
 
 		/**
 		 * Construct Function
-		 * 
-		 * @this jQuerySelector 
-		 * @param string | object method 
+		 *
+		 * @this jQuerySelector
+		 * @param string | object method
 		 */
 		function filePreuploader(method)
 		{
@@ -123,7 +120,6 @@ if (jQuery)(function($) {
 				autoSubmitBy: false,
 				version: '0.3'
 			};
-
 
 			/**
 			 *	Each all elements of selector.
@@ -146,7 +142,6 @@ if (jQuery)(function($) {
 
 
 
-		
 		/**
 		 * Handle event for change file input.
 		 *
@@ -155,7 +150,7 @@ if (jQuery)(function($) {
 		 */
 		filePreuploader.prototype.onChange = function(component)
 		{
-            var form = $(component).parents('form'),
+			var form = $(component).parents('form'),
 				context = this,
 				iframe = $('<iframe/>', {
 					'id': context.uploaderName,
@@ -163,17 +158,29 @@ if (jQuery)(function($) {
 					'style': 'display: none',
 					'width': 500,
 					'height': 500
-					});
+				});
 
-            //  Data via iframe
-            form.attr('target', this.uploaderName);
+			//  Auto send via special button.
+			if (this.autoSubmitBy) {
+				form.find(context.uploadWrapper + ' :file')
+					.parents('li.file')
+					.css({
+						'background-image': 'url("' + context.spinnerUrl + '")',
+						'background-position': 'center',
+						'background-repeat': 'no-repeat'
+					});
+				form.find(assertEmpty(this.autoSubmitBy, this.autoSubmitBy)).click();
+			}
+
+			//  Data via iframe
+			form.attr('target', this.uploaderName);
 			form.append(iframe);
 
-            //  Second getting iframe from DOM
-            $('#' + this.uploaderName).load(function() {
+			//  Second getting iframe from DOM
+			$('#' + this.uploaderName).load(function() {
 
 				form.attr('target', null);
-				
+
 				//  Replace original content by from server.
 				assertEmpty(form.find(context.snippet), context.snippet)
 					.html($(context.snippet, getDocumentFromWindow(this)).html())
@@ -201,18 +208,6 @@ if (jQuery)(function($) {
 						});
 					});
 			});
-
-            //  Auto send via special button.
-            if (this.autoSubmitBy) {
-				form.find(context.uploadWrapper + ' :file')
-					.parents('li.file')
-					.css({
-						'background-image': 'url("' + context.spinnerUrl + '")',
-						'background-position': 'center',
-						'background-repeat': 'no-repeat'
-						});
-				form.find(assertEmpty(this.autoSubmitBy, this.autoSubmitBy)).click();
-			}
 		}
 
 
