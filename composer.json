@@ -18,7 +18,8 @@
         }
     ],
     "autoload": {
-        "psr-0": {"Taco": "libs/"}
+        "psr-0": {"Taco": "libs/"},
+        "classmap": ["libs/Taco/Nette/Forms/interfaces.php"]
     },
     "repositories": [
         { "type": "vcs", "url": "git://github.com/tacoberu/php-utils.git"}
