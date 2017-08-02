@@ -16,7 +16,7 @@ use Nette\Forms\Form,
 class ColorInput extends TextInput
 {
 
-	const PATTERN = '/^(#[0-9a-fA-F]{6})|transparent|inherit$/';
+	const PATTERN = '/^(#[0-9a-fA-F]{6})$/';
 
 
 	/**
