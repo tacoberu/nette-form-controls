@@ -1,20 +1,10 @@
 <?php
 /**
- * This file is part of the Taco Projects.
- *
- * Copyright (c) 2004, 2013 Martin Takáč (http://martin.takac.name)
- *
- * For the full copyright and license information, please view
- * the file LICENCE that was distributed with this source code.
- *
- * PHP version 5.3
- *
- * @author     Martin Takáč (martin@takac.name)
+ * Copyright (c) since 2004 Martin Takáč (http://martin.takac.name)
+ * @license   https://opensource.org/licenses/MIT MIT
  */
 
-
 namespace Taco\Nette\Forms\Controls;
-
 
 use Nette\DateTime,
 	Nette\Utils\Html,
@@ -24,7 +14,7 @@ use Nette\DateTime,
 
 
 /**
- * @author Martin Takáč <taco@taco-beru.name>
+ * @author Martin Takáč <martin@takac.name>
  * @credits David Grudl
  */
 class DateInput extends BaseControl
@@ -60,7 +50,7 @@ class DateInput extends BaseControl
 	/**
 	 * Nastavení controlu by code
 	 *
-	 * @param string|Nette\DateTime $value
+	 * @param string|DateTime $value
 	 */
 	public function setValue($value)
 	{
@@ -79,7 +69,7 @@ class DateInput extends BaseControl
 
 
 	/**
-	 * @return Nette\DateTime
+	 * @return DateTime
 	 */
 	public function getValue()
 	{
@@ -206,7 +196,5 @@ class DateInput extends BaseControl
 
 		return False;;
 	}
-
-
 
 }

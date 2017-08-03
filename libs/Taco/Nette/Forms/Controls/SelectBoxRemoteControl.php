@@ -23,7 +23,7 @@ use Taco\Nette\Forms\QueryModel;
  * - Infinite scrolling content.
  * - In frontend support for Select2, Change, selectmenu.
  *
- * @author	 Martin Takáč <martin@takac.name>
+ * @author Martin Takáč <martin@takac.name>
  */
 class SelectBoxRemoteControl extends Forms\SelectBox implements ISignalReceiver
 {

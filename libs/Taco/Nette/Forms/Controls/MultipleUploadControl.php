@@ -1,13 +1,10 @@
 <?php
 /**
- * Copyright (c) 2004, 2016 Martin Takáč (http://martin.takac.name)
- *
- * For the full copyright and license information, please view
- * the file LICENCE that was distributed with this source code.
+ * Copyright (c) since 2004 Martin Takáč (http://martin.takac.name)
+ * @license   https://opensource.org/licenses/MIT MIT
  */
 
 namespace Taco\Nette\Forms\Controls;
-
 
 use Nette,
 	Nette\DateTime,

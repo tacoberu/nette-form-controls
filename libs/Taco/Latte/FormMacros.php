@@ -1,20 +1,10 @@
 <?php
 /**
- * This file is part of the Taco Projects.
- *
- * Copyright (c) 2004, 2013 Martin Takáč (http://martin.takac.name)
- *
- * For the full copyright and license information, please view
- * the file LICENCE that was distributed with this source code.
- *
- * PHP version 5.3
- *
- * @author Martin Takáč (martin@takac.name)
+ * Copyright (c) since 2004 Martin Takáč (http://martin.takac.name)
+ * @license   https://opensource.org/licenses/MIT MIT
  */
 
-
 namespace Taco\Latte;
-
 
 use Nette;
 use Latte,
@@ -27,13 +17,13 @@ use Latte,
  *
  * - {errors name}
  *
- * @author      Martin Takáč <taco@taco-beru.name>
- * @credits     David Grudl
+ * @author  Martin Takáč <martin@takac.name>
+ * @credits David Grudl
  */
 class FormMacros extends Latte\Macros\MacroSet
 {
 
-	public static function install(Latte\Compiler $compiler)
+	static function install(Latte\Compiler $compiler)
 	{
 		$set = new static($compiler);
 		$set->addMacro('errors', array($set, 'macroErrors'));
@@ -44,7 +34,7 @@ class FormMacros extends Latte\Macros\MacroSet
 	/**
 	 * {errors ...}
 	 */
-	public function macroErrors(MacroNode $node, PhpWriter $writer)
+	function macroErrors(MacroNode $node, PhpWriter $writer)
 	{
 		$words = $node->tokenizer->fetchWords();
 		if (!$words) {

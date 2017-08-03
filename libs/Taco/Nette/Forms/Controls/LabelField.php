@@ -1,15 +1,10 @@
 <?php
 /**
- * This file is part of the Taco Projects.
- *
- * Copyright (c) 2004, 2013 Martin Takáč (http://martin.takac.name)
- *
- * For the full copyright and license information, please view
- * the file LICENCE that was distributed with this source code.
+ * Copyright (c) since 2004 Martin Takáč (http://martin.takac.name)
+ * @license   https://opensource.org/licenses/MIT MIT
  */
 
 namespace Taco\Nette\Forms\Controls;
-
 
 use Nette\Utils\Html,
 	Nette\Forms\Form,
@@ -20,7 +15,7 @@ use Taco\Utils\Formaters;
 /**
  *  Fake formulářový prvek, který bere hodnotu a jen ji vykreslí.
  *
- *	@author		Martin Takáč
+ * @author Martin Takáč <martin@takac.name>
  */
 class LabelField extends BaseControl
 {
