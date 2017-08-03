@@ -6,11 +6,11 @@
 
 namespace Taco\Nette\Forms\Controls;
 
-use Nette\DateTime,
-	Nette\Utils\Html,
+use DateTime;
+use Nette\Web\Html,
 	Nette\Forms\Helpers,
 	Nette\Forms\Form,
-	Nette\Forms\Controls\BaseControl;
+	Nette\Forms\FormControl as BaseControl;
 
 
 /**
@@ -55,7 +55,15 @@ class DateInput extends BaseControl
 	public function setValue($value)
 	{
 		if ($value) {
-			$data = DateTime::from($value);
+			if ($value instanceof DateTime) {
+				$data = $value;
+			}
+			elseif (is_string($value)) {
+				$data = DateTime::createFromFormat('Y-m-d', $value);
+			}
+			else {
+				throw new InvalidArgumentException('Value must be string or DateTime.');
+			}
 			$this->day = $data->format('j');
 			$this->month = $data->format('n');
 			$this->year = $data->format('Y');
@@ -74,7 +82,7 @@ class DateInput extends BaseControl
 	public function getValue()
 	{
 		return @ checkdate($this->month, $this->day, $this->year)
-				? DateTime::from("{$this->year}-{$this->month}-{$this->day}")
+				? new DateTime("{$this->year}-{$this->month}-{$this->day} 00:00:00")
 				: Null;
 	}
 

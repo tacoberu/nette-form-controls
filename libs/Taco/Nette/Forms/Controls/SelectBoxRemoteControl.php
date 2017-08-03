@@ -7,11 +7,10 @@
 namespace Taco\Nette\Forms\Controls;
 
 use Nette;
+use Nette\Utils\Validators;
 use Nette\Forms;
 use Nette\Application\ISignalReceiver;
-use Nette\Application\PresenterComponentReflection;
 use Nette\Application\JsonResponse;
-use InvalidArgumentException;
 use Taco\Nette\Forms\QueryModel;
 
 
@@ -128,12 +127,12 @@ class SelectBoxRemoteControl extends Forms\SelectBox implements ISignalReceiver
 	{
 		/** @var Nette\Utils\Html $el */
 		$el = parent::getControl();
-		$el->attrs['data-type'] = 'remoteselect';
-		$el->attrs['data-data-url'] = $this->link('//range!', array());
-		$el->attrs['data-min-input'] = $this->minInput;
-		$el->attrs['data-page-size'] = $this->pageSize;
+		$el->{'data-type'} = 'remoteselect';
+		$el->{'data-data-url'} = $this->link('//range!', array());
+		$el->{'data-min-input'} = $this->minInput;
+		$el->{'data-page-size'} = $this->pageSize;
 		//~ if ($this->prompt) {
-			//~ $el->data('prompt', $this->prompt);
+			//~ $el->{'data-prompt'} = $this->prompt;
 		//~ }
 
 		return $el;
@@ -167,6 +166,7 @@ class SelectBoxRemoteControl extends Forms\SelectBox implements ISignalReceiver
 	 */
 	function setValue($value)
 	{
+		Validators::assert($value, 'string|int|null');
 		if (/*$this->checkAllowedValues && */$value !== NULL && empty($this->fetchOne($value))) {
 			throw new Nette\InvalidArgumentException("Value '$value' is not found of resource.");
 		}
@@ -223,6 +223,7 @@ class SelectBoxRemoteControl extends Forms\SelectBox implements ISignalReceiver
 	 */
 	private function fetchOne($id)
 	{
+		Validators::assert($id, 'string');
 		if ($value = $this->model->read($id)) {
 			return (array) $value;
 		}

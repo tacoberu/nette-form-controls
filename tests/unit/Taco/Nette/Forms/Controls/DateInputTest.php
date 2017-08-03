@@ -29,11 +29,11 @@ class DateInputTest extends PHPUnit_Framework_TestCase
 
 		$this->assertNull($m->getValue());
 		$this->assertFalse((bool)$m->getOption('rendered'));
-		$this->assertInstanceOf('Nette\Utils\Html', $m->control);
+		$this->assertInstanceOf('Nette\Web\Html', $m->control);
 		$this->assertEquals('<div class="input">'
-				. '<input name="foo[day]" size="4" placeholder="day">'
-				. '<input name="foo[month]" size="4" placeholder="month">'
-				. '<input name="foo[year]" size="4" placeholder="year">'
+				. '<input name="foo[day]" size="4" placeholder="day" />'
+				. '<input name="foo[month]" size="4" placeholder="month" />'
+				. '<input name="foo[year]" size="4" placeholder="year" />'
 				. '</div>', (string)$m->control);
 
 		$this->assertTrue((bool)$m->getOption('rendered'));
@@ -46,45 +46,34 @@ class DateInputTest extends PHPUnit_Framework_TestCase
 		$form = new Form();
 
 		$m = new DateInput();
-		$m->value = new DateTime('2011-04-30');
+		$m->value = $val = new DateTime('2011-04-30');
 		$form['foo'] = $m;
 
-		//~ $this->assertNull($m->getValue());
-		$this->assertInstanceOf('Nette\Utils\Html', $m->control);
+		$this->assertEquals($val, $m->getValue());
+		$this->assertInstanceOf('Nette\Web\Html', $m->control);
 		$this->assertEquals('<div class="input">'
-				. '<input name="foo[day]" value="30" size="4" placeholder="day">'
-				. '<input name="foo[month]" value="4" size="4" placeholder="month">'
-				. '<input name="foo[year]" value="2011" size="4" placeholder="year">'
+				. '<input name="foo[day]" value="30" size="4" placeholder="day" />'
+				. '<input name="foo[month]" value="4" size="4" placeholder="month" />'
+				. '<input name="foo[year]" value="2011" size="4" placeholder="year" />'
 				. '</div>', (string)$m->control);
 	}
 
 
 
-	function _testInputsLoadValue()
+	function testSetValueAsString()
 	{
 		$form = new Form();
 
-		$m = new DateInput();
-		//~ $m->value = new DateTime('2011-04-30');
-		$form['foo'] = $m;
-
-		$m->loadHttpData();
-
-		dump($m->getValue());
-	}
-
-
-
-	function _testSingleEdit()
-	{
-		$form = new Form();
-
-		$m = new DateInput(Null, DateInput::STYLE_SINGLE);
-		$m->value = new DateTime('2011-04-30');
-		$form['foo'] = $m;
-
-		$this->assertInstanceOf('Nette\Utils\Html', $m->control);
-		$this->assertEquals('<input name="foo[day]" value="2011-04-30" size="12">', (string)$m->control);
+		$input = new DateInput();
+		$input->value = $val = '2011-04-30';
+		$form['foo'] = $input;
+		$this->assertEquals(DateTime::createFromFormat('Y-m-d H:i:s', "$val 00:00:00"), $input->getValue());
+		$this->assertInstanceOf('Nette\Web\Html', $input->control);
+		$this->assertEquals('<div class="input">'
+				. '<input name="foo[day]" value="30" size="4" placeholder="day" />'
+				. '<input name="foo[month]" value="4" size="4" placeholder="month" />'
+				. '<input name="foo[year]" value="2011" size="4" placeholder="year" />'
+				. '</div>', (string)$input->control);
 	}
 
 }
