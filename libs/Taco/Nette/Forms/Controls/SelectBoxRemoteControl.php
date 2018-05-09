@@ -87,7 +87,7 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 		list($term, $page) = $this->prepareRequestRange();
 
 		$fn = $this->dataquery;
-		$payload = $fn($term, $page, $this->pageSize);
+		$payload = (object) $fn($term, $page, $this->pageSize);
 		Validators::assertField((array)$payload, 'total', 'numeric');
 		Validators::assertField((array)$payload, 'items', 'array');
 
@@ -115,8 +115,8 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 		$el->data('type', 'remoteselect');
 		$el->data('data-url', $this->link('//range!', array()));
 		$el->data('min-input', $this->minInput);
-		if ($this->prompt) {
-			$el->data('prompt', $this->prompt);
+		if ($this->getPrompt()) {
+			$el->data('prompt', $this->getPrompt());
 		}
 
 		return $el;
@@ -222,10 +222,10 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 	 */
 	private function prepareRequestRange()
 	{
-		$arr = $this->getPresenter()->parameters;
+		$arr = $this->getPresenter()->getParameters();
 		return array(
-			$arr['term'],
-			isset($arr['page']) ? $arr['page'] : 1
+			isset($arr['term']) ? $arr['term'] : '',
+			isset($arr['page']) ? $arr['page'] : 1,
 		);
 	}
 

@@ -14,8 +14,10 @@ use Nette;
  *
  * @author Martin Takáč <martin@takac.name>
  */
-class FileRemove extends Nette\Object
+class FileRemove
 {
+
+	use Nette\SmartObject;
 
 
 	/**

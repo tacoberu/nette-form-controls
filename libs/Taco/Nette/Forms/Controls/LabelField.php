@@ -138,12 +138,12 @@ class LabelField extends BaseControl
 		$control->value = (string) $this->getRawValue();
 		unset($control->disabled);
 		unset($control->id);
-		$container->add($control);
+		$container->addHtml($control);
 
 		$field = clone $this->field;
 		$field->id = $this->getHtmlId();
 		$field->setText($this->format($this->getRawValue()));
-		$container->add($field);
+		$container->addHtml($field);
 
 		return $container;
 	}

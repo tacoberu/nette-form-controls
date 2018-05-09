@@ -14,8 +14,10 @@ use Nette;
  *
  * @author Martin Takáč <martin@takac.name>
  */
-class FileUploaded extends Nette\Object
+class FileUploaded
 {
+
+	use Nette\SmartObject;
 
 
 	/**

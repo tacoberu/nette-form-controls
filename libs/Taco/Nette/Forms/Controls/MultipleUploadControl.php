@@ -15,7 +15,7 @@ use Nette,
 use Taco,
 	Taco\Nette\Http\FileUploaded,
 	Taco\Nette\Http\FileRemove;
-use RuntimeException;
+use RuntimeException, LogicException;
 
 
 /**
@@ -215,40 +215,41 @@ class MultipleUploadControl extends BaseControl
 				$section = 'uploading';
 			}
 
-			$container->add(Html::el('li', array('class' => "file {$section}-file"))
-					->add(Html::el('input', array(
+			$container->addHtml(Html::el('li', array('class' => "file {$section}-file"))
+					->addHtml(Html::el('input', array(
 							'type' => 'hidden',
 							'value' => self::formatValue($item),
 							'name' => "{$name}[{$section}][files][]",
 							)))
-					->add(Html::el('input', array(
+					->addHtml(Html::el('input', array(
 							'type' => 'checkbox',
 							'checked' => ($item->isRemove()),
 							'value' => self::formatValue($item),
 							'name' => "{$name}[{$section}][remove][]",
 							'title' => strtr('Remove file: %{name}', array(
-									'%{name}' => $item->name
+									'%{name}' => $item->getName()
 									)),
 							)))
-					->add(Html::el('span', array(
-							'class' => array('file', $parseTypeFunction($item->contentType)),
-							))->setText($item->name))
+					->addHtml(Html::el('span', array(
+							'class' => array('file', $parseTypeFunction($item->getContentType())),
+							))->setText($item->getName()))
 					);
 		}
 
 		// Nový prvek
-		return $container->add(Html::el('li', array('class' => 'file new-file'))
-				->add(Html::el('input', array(
-						'type' => 'file',
-						'name' => $name . '[new][]',
-						'multiple' => True, //$this->multiple,
-						)))
-				->add(Html::el('input', array(
-						'type' => 'hidden',
-						'name' => $name . '[transaction]',
-						'value' => $this->store->getId(),
-						)))
-						);
+		return $container
+			->addHtml(Html::el('li', array('class' => 'file new-file'))
+				->addHtml(Html::el('input', array(
+					'type' => 'file',
+					'name' => $name . '[new][]',
+					'multiple' => $this->multiple,
+				)))
+				->addHtml(Html::el('input', array(
+					'type' => 'hidden',
+					'name' => $name . '[transaction]',
+					'value' => $this->store->getId(),
+				)))
+			);
 	}
 
 
@@ -261,7 +262,7 @@ class MultipleUploadControl extends BaseControl
 		$this->store->destroy();
 		$this->uploading = array();
 		foreach ($this->value as $i => $x) {
-			if ( ! $x->commited) {
+			if ( ! $x->isCommited()) {
 				unset($this->value[$i]);
 			}
 		}
@@ -317,7 +318,7 @@ class MultipleUploadControl extends BaseControl
 	 */
 	private static function formatValue($s)
 	{
-		return $s->contentType . '#' . $s->path;
+		return $s->getContentType() . '#' . $s->getPath();
 	}
 
 
@@ -330,7 +331,7 @@ class MultipleUploadControl extends BaseControl
 	{
 		switch ($file->error) {
 			case UPLOAD_ERR_OK:
-				throw \LogicException('No error.');
+				throw LogicException('No error.');
 			case UPLOAD_ERR_INI_SIZE:
 				$message = "The uploaded file exceeds the upload_max_filesize directive in php.ini";
 				break;
@@ -369,8 +370,7 @@ class MultipleUploadControl extends BaseControl
 	private static function createFileUploadedFromValue($s)
 	{
 		$s = explode('#', $s, 2);
-		$file = new FileUploaded($s[1], $s[0]);
-		return $file;
+		return new FileUploaded($s[1], $s[0]);
 	}
 
 }
@@ -431,7 +431,7 @@ interface UploadStore
  * Úložiště uchovávající nahrávané soubory před tím, než se skutečně uloží.
  * V tomto případě to bude jen jiný adresář.
  */
-class UploadStoreTemp extends Nette\Object implements UploadStore
+class UploadStoreTemp implements UploadStore
 {
 
 	/**
@@ -467,7 +467,7 @@ class UploadStoreTemp extends Nette\Object implements UploadStore
 	function __construct($prefix = Null, $id = Null)
 	{
 		if ($prefix) {
-			Validators::assert($id, 'string:1..');
+			Validators::assert($prefix, 'string:1..');
 			$this->prefix = $prefix;
 		}
 
