@@ -28,6 +28,15 @@ use RuntimeException, LogicException;
 class MultipleUploadControl extends BaseControl
 {
 
+	const PRELOAD_BUTTON = '__taco_preload';
+
+	/**
+	 * Díky tomuto traitu je možné tomuto prvku posílat signály.
+	 *  @TODO
+	 */
+	// use SignalControl;
+
+
 	/**
 	 * Seznam existujících nahraných souborů.
 	 * @var array
@@ -83,10 +92,10 @@ class MultipleUploadControl extends BaseControl
 		parent::__construct($label);
 		$this->multiple = (bool) $multiple;
 		$this->control = Html::el('ul', array(
-				'class' => 'file-uploader',
-				));
-		$this->parseType = function ($s)
-		{
+			'class' => 'file-uploader',
+			'data-type' => 'file-uploader',
+		));
+		$this->parseType = function ($s) {
 			if (empty($s)) {
 				return $s;
 			}
@@ -194,6 +203,13 @@ class MultipleUploadControl extends BaseControl
 
 
 
+	function handlePreload()
+	{
+		// @TODO
+	}
+
+
+
 	/**
 	 * Html representation of control.
 	 *
@@ -204,6 +220,7 @@ class MultipleUploadControl extends BaseControl
 		$name = $this->getHtmlName();
 
 		$container = clone $this->control;
+		//~ $container->setAttribute('data-preload-handle', $this->link('preload!'));
 		$parseTypeFunction = $this->parseType;
 
 		// Prvky nahrané už někde na druhé straně
@@ -215,25 +232,26 @@ class MultipleUploadControl extends BaseControl
 				$section = 'uploading';
 			}
 
-			$container->addHtml(Html::el('li', array('class' => "file {$section}-file"))
+			$container
+				->addHtml(Html::el('li', array('class' => "file {$section}-file"))
 					->addHtml(Html::el('input', array(
-							'type' => 'hidden',
-							'value' => self::formatValue($item),
-							'name' => "{$name}[{$section}][files][]",
-							)))
+						'type' => 'hidden',
+						'value' => self::formatValue($item),
+						'name' => "{$name}[{$section}][files][]",
+					)))
 					->addHtml(Html::el('input', array(
-							'type' => 'checkbox',
-							'checked' => ($item->isRemove()),
-							'value' => self::formatValue($item),
-							'name' => "{$name}[{$section}][remove][]",
-							'title' => strtr('Remove file: %{name}', array(
-									'%{name}' => $item->getName()
-									)),
-							)))
+						'type' => 'checkbox',
+						'checked' => ($item->isRemove()),
+						'value' => self::formatValue($item),
+						'name' => "{$name}[{$section}][remove][]",
+						'title' => strtr('Remove file: %{name}', array(
+							'%{name}' => $item->getName()
+						)),
+					)))
 					->addHtml(Html::el('span', array(
-							'class' => array('file', $parseTypeFunction($item->getContentType())),
-							))->setText($item->getName()))
-					);
+						'class' => array('file', $parseTypeFunction($item->getContentType())),
+					))->setText($item->getName()))
+				);
 		}
 
 		// Nový prvek
@@ -283,6 +301,9 @@ class MultipleUploadControl extends BaseControl
 				throw new Nette\InvalidStateException('File upload requires method POST.');
 			}
 			$form->getElementPrototype()->enctype = 'multipart/form-data';
+			if ( ! isset($form[self::PRELOAD_BUTTON])) {
+				$form->addSubmit(self::PRELOAD_BUTTON, 'Preload')->setValidationScope(False);
+			}
 		}
 		parent::attached($form);
 	}

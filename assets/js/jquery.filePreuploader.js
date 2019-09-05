@@ -49,6 +49,13 @@ if (jQuery)(function($) {
 
 
 
+		function deriveSelector(index, el)
+		{
+			return '__taco_uploader_' + index + '_' + Math.ceil(Math.random() * 9999999);
+		}
+
+
+
 		/**
 		 * Inicializate function for instantion.
 		 *
@@ -56,10 +63,19 @@ if (jQuery)(function($) {
 		 * @param self DOMElement
 		 * @param context instance pluginu ?/ configuration this instance
 		 */
-		function init(self, context)
+		function init(self, context, index)
 		{
 			context.spinnerUrl || $.error("Unused require option 'spinnerUrl'.");
-			context.snippet || $.error("Unused require option 'snippet'.");
+
+			// Doplnit id, pokud není.
+			if ( ! self.id) {
+				context.snippet = '#' + deriveSelector(index, self);
+				self.setAttribute('id', context.snippet);
+			}
+
+			if ( ! context.snippet) {
+				context.snippet = '#' + self.id;
+			}
 
 			var m = $(self);
 
@@ -88,7 +104,7 @@ if (jQuery)(function($) {
 
 			//  Auto send via special button.
 			if (context.autoSubmitBy) {
-				$(m).parent()
+				$(m).parents('form')
 					.find(assertEmpty(context.autoSubmitBy, context.autoSubmitBy))
 					.css({
 						'visibility': 'hidden',
@@ -118,7 +134,7 @@ if (jQuery)(function($) {
 				uploadWrapper: 'li.file.new-file',
 				uploaderName: 'file-preuploader',
 				autoSubmitBy: false,
-				version: '0.3'
+				version: '0.4'
 			};
 
 			/**
@@ -128,7 +144,7 @@ if (jQuery)(function($) {
 			return this.each(function(index, el) {
 				//	Instantion method
 				if (typeof method === 'object' || !method) {
-					return init(this, $.fn.extend(_this.defaults, method || {}));
+					return init(this, $.fn.extend(_this.defaults, method || {}), index);
 				}
 				//	Option method
 				else if (filePreuploader.prototype[method]) {
@@ -159,26 +175,12 @@ if (jQuery)(function($) {
 					'width': 500,
 					'height': 500
 				});
-
-			//  Auto send via special button.
-			if (this.autoSubmitBy) {
-				form.find(context.uploadWrapper + ' :file')
-					.parents('li.file')
-					.css({
-						'background-image': 'url("' + context.spinnerUrl + '")',
-						'background-position': 'center',
-						'background-repeat': 'no-repeat'
-					});
-				form.find(assertEmpty(this.autoSubmitBy, this.autoSubmitBy)).click();
-			}
-
 			//  Data via iframe
 			form.attr('target', this.uploaderName);
 			form.append(iframe);
 
 			//  Second getting iframe from DOM
-			$('#' + this.uploaderName).load(function() {
-
+			$('#' + this.uploaderName).on('load', function() {
 				form.attr('target', null);
 
 				//  Replace original content by from server.
@@ -208,6 +210,18 @@ if (jQuery)(function($) {
 						});
 					});
 			});
+
+			//  Auto send via special button.
+			if (this.autoSubmitBy) {
+				form.find(context.uploadWrapper + ' :file')
+					.parents('li.file')
+					.css({
+						'background-image': 'url("' + context.spinnerUrl + '")',
+						'background-position': 'center',
+						'background-repeat': 'no-repeat'
+					});
+				form.find(assertEmpty(this.autoSubmitBy, this.autoSubmitBy)).click();
+			}
 		}
 
 

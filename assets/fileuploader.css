@@ -1,0 +1,17 @@
+ul.file-uploader {
+    border: 1px solid darkgrey;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+ul.file-uploader li {
+    margin: 0;
+    padding: .2em .5em;
+    border-bottom: 1px solid lightgrey;
+}
+ul.file-uploader li:last-child {
+    border-bottom: 0 none;
+}
+ul.file-uploader li input[type="checkbox"]{
+    margin-right: .5em;
+}
