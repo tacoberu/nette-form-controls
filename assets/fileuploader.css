@@ -12,6 +12,17 @@ ul.file-uploader li {
 ul.file-uploader li:last-child {
     border-bottom: 0 none;
 }
-ul.file-uploader li input[type="checkbox"]{
-    margin-right: .5em;
+ul.file-uploader li input[type="checkbox"] {
+    margin-right: 1.8em;
+    cursor: pointer;
+    width: 0;
+}
+ul.file-uploader li input[type="checkbox"]:after {
+    content: "x";
+    color: red;
+    font-weight: bold;
+    padding: 3px 6px;
+    background-color: #e5e5e5;
+    border: 1px solid #aaa;
+    border-radius: 2px;
 }
