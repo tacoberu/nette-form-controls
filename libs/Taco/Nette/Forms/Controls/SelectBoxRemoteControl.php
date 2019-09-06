@@ -11,6 +11,7 @@ use Nette\Utils\Validators;
 use Nette\Forms\Controls;
 use Nette\Application\UI\ISignalReceiver;
 use Nette\Application\Responses\JsonResponse;
+use Taco\Nette\Forms\QueryModel;
 
 
 /**
@@ -47,15 +48,9 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 
 
 	/**
-	 * @var calback(term:string, page:numeric, pageSize:numeric) -> {total:numeric, items:array of {id:string, label:string}}
+	 * @var QueryModel
 	 */
-	private $dataquery;
-
-
-	/**
-	 * @var calback(id:string) -> {id:string, label:string}
-	 */
-	private $dataread;
+	private $model;
 
 
 	/** @var {id:string, label:string} */
@@ -64,14 +59,25 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 
 	/**
 	 * @param string $label Popisek prvku.
-	 * @param calback(term:string, page:numeric, pageSize:numeric) -> {total:numeric, items:array of {id:string, label:string}}
-	 * @param calback(id:string) -> {id:string, label:string}
 	 */
-	function __construct($label = NULL, $dataquery, $dataread)
+	function __construct(QueryModel $model, $label = NULL, $pageSize = NULL)
 	{
 		parent::__construct($label);
-		$this->dataquery = $dataquery;
-		$this->dataread = $dataread;
+		$this->model = $model;
+		if ($pageSize) {
+			$this->pageSize = (int) $pageSize;
+		}
+	}
+
+
+
+	/**
+	 * @param int $val Set optional PageSize
+	 */
+	function setPageSize($val)
+	{
+		$this->pageSize = (int) $val;
+		return $this;
 	}
 
 
@@ -81,20 +87,32 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 	 * @param string $term Vyhledávaný text.
 	 * @param numeric $page O kolikátou stránku se jedná. Počítáno o 1.
 	 */
-	function handleRange($term, $page)
+	function handleRange($term, $page, $pageSize = NULL)
 	{
-		list($term, $page) = $this->prepareRequestRange();
+		Validators::assert($term, 'string|null');
+		Validators::assert($page, 'numeric|null');
+		list($term, $page, $pageSize) = $this->prepareRequestRange();
+		if ($pageSize === NULL) {
+			$pageSize = $this->pageSize;
+		}
+		$page = (int) $page;
+		$pageSize = (int) $pageSize;
+		if ( ! $pageSize) {
+			$pageSize = $this->pageSize;
+		}
+		if ( ! $page) {
+			$page = 1;
+		}
 
-		$fn = $this->dataquery;
-		$payload = (object) $fn($term, $page, $this->pageSize);
+		$payload = $this->model->range((string)$term, $page, $pageSize);
 		Validators::assertField((array)$payload, 'total', 'numeric');
 		Validators::assertField((array)$payload, 'items', 'array');
 
 		// Zda existuje další záznam.
-		$payload->isMoreResults = ($page * $this->pageSize <= $payload->total);
+		$payload->isMoreResults = ($page * $pageSize <= $payload->total);
 		$payload->term = $term;
 		$payload->page = (int) $page;
-		$payload->pageSize = (int) $this->pageSize;
+		$payload->pageSize = (int) $pageSize;
 
 		// Výsledky vyhledávání.
 		$payload->items = array_values($payload->items);
@@ -206,8 +224,7 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 	private function fetchOne($id)
 	{
 		Validators::assert($id, 'string');
-		$fn = $this->dataread;
-		if ($value = $fn($id)) {
+		if ($value = $this->model->read($id)) {
 			return (array) $value;
 		}
 		return NULL;
@@ -222,9 +239,12 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 	private function prepareRequestRange()
 	{
 		$arr = $this->getPresenter()->getParameters();
+		unset($arr['do']);
+		unset($arr['action']);
 		return array(
 			isset($arr['term']) ? $arr['term'] : '',
 			isset($arr['page']) ? $arr['page'] : 1,
+			isset($arr['pageSize']) ? $arr['pageSize'] : NULL,
 		);
 	}
 
