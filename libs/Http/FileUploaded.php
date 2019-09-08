@@ -56,7 +56,7 @@ class FileUploaded
 	/**
 	 * @param string $path
 	 */
-	public function __construct($path, $type, $name = Null)
+	function __construct($path, $type, $name = Null)
 	{
 		$this->path = $path;
 		$this->type = $type;
@@ -70,7 +70,7 @@ class FileUploaded
 	/**
 	 * @return string
 	 */
-	public function getName()
+	function getName()
 	{
 		return $this->name;
 	}
@@ -80,16 +80,17 @@ class FileUploaded
 	/**
 	 * @return string
 	 */
-	public function getTemporaryFile()
+	function getTemporaryFile()
 	{
 		return $this->path;
 	}
 
 
+
 	/**
 	 * @return string
 	 */
-	public function getPath()
+	function getPath()
 	{
 		return $this->path;
 	}
@@ -99,7 +100,7 @@ class FileUploaded
 	/**
 	 * @return boolean
 	 */
-	public function isCommited()
+	function isCommited()
 	{
 		return $this->commited;
 	}
@@ -109,7 +110,7 @@ class FileUploaded
 	/**
 	 * @return boolean
 	 */
-	public function isRemove()
+	function isRemove()
 	{
 		return $this->remove;
 	}
@@ -119,7 +120,7 @@ class FileUploaded
 	/**
 	 * @param boolean
 	 */
-	public function setCommited($m = True)
+	function setCommited($m = True)
 	{
 		$this->commited = $m;
 		return $this;
@@ -130,7 +131,7 @@ class FileUploaded
 	/**
 	 * @param boolean
 	 */
-	public function setRemove($m = True)
+	function setRemove($m = True)
 	{
 		$this->remove = $m;
 		return $this;
@@ -141,10 +142,9 @@ class FileUploaded
 	/**
 	 * @return string
 	 */
-	public function getContentType()
+	function getContentType()
 	{
 		return $this->type;
 	}
-
 
 }

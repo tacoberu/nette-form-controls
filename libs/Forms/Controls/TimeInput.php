@@ -20,7 +20,7 @@ use Nette\Utils\Html,
  * @author Martin Takáč <martin@takac.name>
  * @credits David Grudl
  */
-class TimeInputSingle extends BaseControl
+class TimeInput extends BaseControl
 {
 
 	/**
@@ -41,7 +41,7 @@ class TimeInputSingle extends BaseControl
 	 * @param string
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct($label = Null, $format = Null)
+	function __construct($label = Null, $format = Null)
 	{
 		parent::__construct($label);
 		if (isset($format)) {
@@ -52,7 +52,7 @@ class TimeInputSingle extends BaseControl
 
 
 
-	public function setStep($val)
+	function setStep($val)
 	{
 		if (is_numeric($val) && $val > 0 && $val < 60) {
 			$this->step = (int) $val;
@@ -66,7 +66,7 @@ class TimeInputSingle extends BaseControl
 	 *
 	 * @param string|Nette\DateTime $value
 	 */
-	public function setValue($value)
+	function setValue($value)
 	{
 		if ($value && $value instanceof \DateTime) {
 			$value = $value->format($this->format);
@@ -80,7 +80,7 @@ class TimeInputSingle extends BaseControl
 	/**
 	 * @return Nette\DateTime
 	 */
-	public function getValue()
+	function getValue()
 	{
 		$value = parent::getValue();
 		if (empty($value)) {
@@ -97,7 +97,7 @@ class TimeInputSingle extends BaseControl
 	/**
 	 * @return Nette\Utils\Html
 	 */
-	public function getControl()
+	function getControl()
 	{
 		$input = parent::getControl();
 		$input->value = $this->value;
@@ -115,7 +115,7 @@ class TimeInputSingle extends BaseControl
 	 * Is control filled?
 	 * @return bool
 	 */
-	public function isFilled()
+	function isFilled()
 	{
 		$value = $this->value;
 		return $value !== NULL && $value !== array() && $value !== '';
@@ -130,7 +130,7 @@ class TimeInputSingle extends BaseControl
 	 *
 	 * @return bool
 	 */
-	public static function validateTime(self $control)
+	static function validateTime(self $control)
 	{
 		try {
 			Time::createFromFormat($control->format, $control->value);

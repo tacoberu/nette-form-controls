@@ -18,7 +18,9 @@
         }
     ],
     "autoload": {
-        "psr-0": {"Taco": "libs/"}
+        "classmap": [
+			"libs/"
+		]
     },
     "license": "MIT"
 }

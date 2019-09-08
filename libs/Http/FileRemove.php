@@ -41,7 +41,7 @@ class FileRemove
 	/**
 	 * @param string $path
 	 */
-	public function __construct($path, $type = 'unknow')
+	function __construct($path, $type = 'unknow')
 	{
 		$this->path = $path;
 		$this->type = $type;
@@ -53,7 +53,7 @@ class FileRemove
 	/**
 	 * @return string
 	 */
-	public function getName()
+	function getName()
 	{
 		return $this->name;
 	}
@@ -63,19 +63,19 @@ class FileRemove
 	/**
 	 * @return string
 	 */
-	public function getPath()
+	function getPath()
 	{
 		return $this->path;
 	}
 
 
+
 	/**
 	 * @return string
 	 */
-	public function getType()
+	function getType()
 	{
 		return $this->type;
 	}
-
 
 }

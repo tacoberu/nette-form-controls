@@ -20,26 +20,14 @@ use Nette\Utils\Html,
  * @author Martin Takáč <martin@takac.name>
  * @credits David Grudl
  */
-class DateInputSingle extends BaseControl
+class DateTimeInput extends BaseControl
 {
 
 	/**
 	 * Formát data.
 	 * @var string
 	 */
-	private $format = 'Y-m-d';
-
-
-	/**
-	 * @var DateTime
-	 */
-	private $start;
-
-
-	/**
-	 * @var DateTime
-	 */
-	private $end;
+	private $format = 'Y-m-d H:i:s';
 
 
 	/**
@@ -47,14 +35,13 @@ class DateInputSingle extends BaseControl
 	 * @param string
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct($label = Null, $format = Null)
+	function __construct($label = Null, $format = Null)
 	{
 		parent::__construct($label);
 		if (isset($format)) {
 			$this->format = $format;
 		}
 		$this->addRule(array(__class__, 'validateDate'), 'Invalid format of date.');
-		$this->addRule(array(__class__, 'validateRange'), 'Invalid range of date.');
 	}
 
 
@@ -64,18 +51,10 @@ class DateInputSingle extends BaseControl
 	 *
 	 * @param string|Nette\DateTime $value
 	 */
-	public function setValue($value)
+	function setValue($value)
 	{
-		if ($value) {
-			if ($value instanceof \DateTime) {
-				$value = $value->format($this->format);
-			}
-			elseif (self::isValidDate($this->format, $value)) {
-				// ok
-			}
-			else {
-				$value = Null;
-			}
+		if ($value && $value instanceof \DateTime) {
+			$value = $value->format($this->format);
 		}
 
 		return parent::setValue($value);
@@ -86,7 +65,7 @@ class DateInputSingle extends BaseControl
 	/**
 	 * @return Nette\DateTime
 	 */
-	public function getValue()
+	function getValue()
 	{
 		$value = parent::getValue();
 		if (empty($value)) {
@@ -94,13 +73,7 @@ class DateInputSingle extends BaseControl
 		}
 
 		if (self::validateDate($this)) {
-			if ($value instanceof \DateTime) {
-				$value->setTime(0,0,0);
-				return $value;
-			}
-			$value = DateTime::createFromFormat($this->format, $value);
-			$value->setTime(0,0,0);
-			return $value;
+			return DateTime::createFromFormat($this->format, $value);
 		}
 	}
 
@@ -109,18 +82,12 @@ class DateInputSingle extends BaseControl
 	/**
 	 * @return Nette\Utils\Html
 	 */
-	public function getControl()
+	function getControl()
 	{
 		$input = parent::getControl();
 		$input->value = $this->value;
-		$input->{'data-date-format'} = self::formatAsBootstrapLike($this->format);
-		if ($this->start) {
-			$input->{'data-date-start-date'} = $this->start->format($this->format);
-		}
-		if ($this->end) {
-			$input->{'data-date-end-date'} = $this->end->format($this->format);
-		}
-		$input->{'data-widget'} = "datepicker";
+		$input->data['date-format'] = self::formatAsBootstrapLike($this->format);
+		$input->data['widget'] = "datepicker";
 		return $input;
 	}
 
@@ -130,7 +97,7 @@ class DateInputSingle extends BaseControl
 	 * Is control filled?
 	 * @return bool
 	 */
-	public function isFilled()
+	function isFilled()
 	{
 		$value = $this->value;
 		return $value !== NULL && $value !== array() && $value !== '';
@@ -138,22 +105,6 @@ class DateInputSingle extends BaseControl
 
 
 
-	public function setStart(\DateTime $val)
-	{
-		$val->setTime(0,0,0);
-		$this->start = $val;
-	}
-
-
-
-	public function setEnd(\DateTime $val)
-	{
-		$val->setTime(0,0,0);
-		$this->end = $val;
-	}
-
-
-
 	/**
 	 * Kontrolujeme příchozivší data od uživatele.
 	 *
@@ -161,65 +112,16 @@ class DateInputSingle extends BaseControl
 	 *
 	 * @return bool
 	 */
-	public static function validateDate(self $control)
-	{
-		return self::isValidDate($control->format, $control->value);
-	}
-
-
-
-	/**
-	 * @param self $control
-	 *
-	 * @return bool
-	 */
-	public static function validateRange(self $control)
+	static function validateDate(self $control)
 	{
 		try {
-			$val = $control->getValue();
-			if (empty($val)) {
-				return True;
-			}
-			if ($control->start && $control->start > $val) {
-				return False;
-			}
-			if ($control->end && $control->end < $val) {
-				return False;
-			}
+			DateTime::createFromFormat($control->format, $control->value);
 			return True;
 		}
 		catch (\Exception $e) {
 			return False;
 		}
 	}
-
-
-
-	/**
-	 * Kontrolujeme příchozivší data od uživatele.
-	 *
-	 * @param string|DateTime
-	 * @param string
-	 *
-	 * @return bool
-	 */
-	private static function isValidDate($format, $value)
-	{
-		try {
-			if (is_string($value)) {
-				DateTime::createFromFormat($format, $value);
-				return True;
-			}
-			if ($value instanceof \DateTime) {
-				return True;
-			}
-			return False;
-		}
-		catch (\Exception $e) {
-			return False;
-		}
-	}
-
 
 
 	/**
