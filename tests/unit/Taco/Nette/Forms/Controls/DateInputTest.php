@@ -31,11 +31,9 @@ class DateInputTest extends PHPUnit_Framework_TestCase
 		$this->assertNull($m->getValue());
 		$this->assertFalse((bool)$m->getOption('rendered'));
 		$this->assertInstanceOf('Nette\Utils\Html', $m->control);
-		$this->assertEquals('<div class="input">'
-				. '<input name="foo[day]" size="4" placeholder="day">'
-				. '<input name="foo[month]" size="4" placeholder="month">'
-				. '<input name="foo[year]" size="4" placeholder="year">'
-				. '</div>', (string)$m->control);
+		$this->assertEquals('<input name="foo" id="frm-foo" '
+				. 'data-nette-rules=\'[{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInput::validateDate","msg":"Invalid format of date."},{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInput::validateRange","msg":"Invalid range of date."}]\' '
+				. 'data-date-format="yyyy-mm-dd" data-widget="datepicker">', (string)$m->control);
 
 		$this->assertTrue((bool)$m->getOption('rendered'));
 	}
@@ -52,11 +50,11 @@ class DateInputTest extends PHPUnit_Framework_TestCase
 
 		//~ $this->assertNull($m->getValue());
 		$this->assertInstanceOf('Nette\Utils\Html', $m->control);
-		$this->assertEquals('<div class="input">'
-				. '<input name="foo[day]" value="30" size="4" placeholder="day">'
-				. '<input name="foo[month]" value="4" size="4" placeholder="month">'
-				. '<input name="foo[year]" value="2011" size="4" placeholder="year">'
-				. '</div>', (string)$m->control);
+		$this->assertEquals('<input name="foo" id="frm-foo" '
+				. 'data-nette-rules=\'[{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInput::validateDate","msg":"Invalid format of date."},{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInput::validateRange","msg":"Invalid range of date."}]\' '
+				. 'value="2011-04-30" '
+				. 'data-date-format="yyyy-mm-dd" '
+				. 'data-widget="datepicker">', (string)$m->control);
 	}
 
 

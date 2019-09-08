@@ -73,7 +73,7 @@ trait SignalControl
 	/**
 	 * @param string
 	 */
-	public function signalReceived($signal)
+	function signalReceived($signal)
 	{
 		$methodName = sprintf('handle%s', \Nette\Utils\Strings::firstUpper($signal));
 		if (!method_exists($this, $methodName)) {

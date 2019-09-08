@@ -11,14 +11,14 @@ use Nette\Utils\Validators;
 
 /**
  * Simple QueryModel implementation by pair of callbacks.
- * @author	 Martin Takáč <martin@takac.name>
+ * @author Martin Takáč <martin@takac.name>
  */
 class CallbackQueryModel implements QueryModel
 {
 
- 	/**
+	/**
 	 * @var calback(term:string, page:numeric, pageSize:numeric) -> {total:numeric, items:array of {id:string, label:string}}
- 	 */
+	 */
 	private $dataquery;
 
 
@@ -28,12 +28,12 @@ class CallbackQueryModel implements QueryModel
 	private $dataread;
 
 
- 	/**
- 	 * @param calback(term:string, page:numeric, pageSize:numeric) -> {total:numeric, items:array of {id:string, label:string}}
- 	 * @param calback(id:string) -> {id:string, label:string}
- 	 */
+	/**
+	 * @param calback(term:string, page:numeric, pageSize:numeric) -> {total:numeric, items:array of {id:string, label:string}}
+	 * @param calback(id:string) -> {id:string, label:string}
+	 */
 	function __construct($dataquery, $dataread)
- 	{
+	{
 		$this->dataquery = $dataquery;
 		$this->dataread = $dataread;
 	}

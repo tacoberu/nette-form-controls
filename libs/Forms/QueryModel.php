@@ -8,7 +8,7 @@ namespace Taco\Nette\Forms;
 
 
 /**
- * @author	 Martin Takáč <martin@takac.name>
+ * @author Martin Takáč <martin@takac.name>
  */
 interface QueryModel
 {
