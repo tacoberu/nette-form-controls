@@ -18,10 +18,11 @@ ul.file-uploader li input[type="checkbox"] {
     width: 0;
 }
 ul.file-uploader li input[type="checkbox"]:after {
-    content: "x";
+    content: "×";
     color: red;
     font-weight: bold;
-    padding: 3px 6px;
+    font-size: larger;
+    padding: 3px 5px 2px 6px;
     background-color: #e5e5e5;
     border: 1px solid #aaa;
     border-radius: 2px;
