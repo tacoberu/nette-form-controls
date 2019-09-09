@@ -116,3 +116,21 @@ $form['tags'] = new MultiSelectBoxRemoteControl($this->getTagSelectQueryModel(),
 <img src="example/remoteselect-form.png" />
 
 
+### Form with initialized callback.
+
+```php
+$form = new Taco\Nette\Application\UI\Form(null);
+```
+or
+
+```php
+// callback will be called only at the beginning
+$form = new Taco\Nette\Application\UI\Form(function() {
+	return [
+		'id' => 42,
+		'title' => 'Lorem ipsum doler ist',
+	];
+});
+```
+
+
