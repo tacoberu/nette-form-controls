@@ -1,0 +1,6 @@
+form div.control-imagefield {
+	width: 400px;
+}
+form div.control-imagefield > img {
+	width: 100%;
+}
