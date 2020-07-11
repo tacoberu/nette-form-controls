@@ -49,7 +49,7 @@ class Form extends Nette\Application\UI\Form
 		if ($presenter instanceof Nette\Application\IPresenter) {
 			if ( ! $this->isAnchored() || ! $this->isSubmitted()) {
 				if ($cb = $this->initialize) {
-					$this->setDefaults((array) $cb());
+					$this->setDefaults((array) $cb($this));
 				}
 			}
 		}
