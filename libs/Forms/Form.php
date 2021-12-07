@@ -10,6 +10,7 @@ use Nette;
 use Nette\Utils\Html;
 use Nette\Utils\IHtmlString;
 use Nette\Forms\ControlGroup;
+use Nette\ComponentModel\IComponent;
 
 
 /**
@@ -53,7 +54,7 @@ class Form extends Nette\Application\UI\Form
 
 
 
-	function addGroup($caption = null, $setAsCurrent = true)
+	function addGroup($caption = null, bool $setAsCurrent = true) : ControlGroup
 	{
 		$group = new MyControlGroup;
 		$group->setOption('label', $caption);
@@ -90,7 +91,7 @@ class Form extends Nette\Application\UI\Form
 	 * @param  string|int|ControlGroup
 	 * @return void
 	 */
-	function removeGroup($name)
+	function removeGroup($name) : void
 	{
 		if (is_string($name) && isset($this->groups[$name])) {
 			$group = $this->groups[$name];
@@ -116,7 +117,7 @@ class Form extends Nette\Application\UI\Form
 	 * Returns all defined groups.
 	 * @return ControlGroup[]
 	 */
-	function getGroups()
+	function getGroups() : array
 	{
 		return $this->groups;
 	}
@@ -128,14 +129,14 @@ class Form extends Nette\Application\UI\Form
 	 * @param  string|int
 	 * @return ControlGroup|null
 	 */
-	function getGroup($name)
+	function getGroup($name) : ?ControlGroup
 	{
 		return isset($this->groups[$name]) ? $this->groups[$name] : null;
 	}
 
 
 
-	protected function attached($presenter)
+	protected function attached(IComponent $presenter) : void
 	{
 		parent::attached($presenter);
 		if ($presenter instanceof Nette\Application\IPresenter) {
@@ -206,7 +207,7 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	 * Renders form body.
 	 * @return string
 	 */
-	function renderBody()
+	function renderBody() : string
 	{
 		$s = $remains = '';
 
@@ -220,7 +221,7 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			$s .= $out;
 		}
 
-		$s .= $remains . $this->renderControls($this->form, True);
+		$s .= $remains . $this->renderControls2($this->form, True);
 
 		$container = $this->getWrapper('form container');
 		$container->setHtml($s);
@@ -234,7 +235,71 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	 * @param  Nette\Forms\Container|Nette\Forms\ControlGroup
 	 * @return string
 	 */
-	function renderControls($parent, $root = False)
+	function renderControls($parent) : string
+	{
+		/*
+		Myslel jsem místo toho $root. Ale nějak to zlobí.
+		if ($parent instanceof Nette\Forms\Form) {
+			dump($parent);
+		}*/
+
+		if (!($parent instanceof Nette\Forms\Container || $parent instanceof Nette\Forms\ControlGroup)) {
+			throw new Nette\InvalidArgumentException('Argument must be Nette\Forms\Container or Nette\Forms\ControlGroup instance.');
+		}
+
+		$container = $this->getWrapper('controls container');
+
+		$buttons = null;
+		foreach ($parent->getControls() as $control) {
+			if ($control instanceof Nette\Forms\ControlGroup) {
+				if ($control->getOption('rendered') || !$control->getControls() || !$control->getOption('visual')) {
+					continue;
+				}
+				list($s, $_) = $this->renderGroup($control, '');
+				$control->setOption('rendered', true);
+
+				//~ if ($parent instanceof Nette\Forms\Form) {
+				if ($root) {
+					$container->addHtml($this->getWrapper('control container-single')->setHtml($s));
+				}
+				else {
+					if ( ! $pair = $this->getWrapper('pair container-group')) {
+						$pair = $this->getWrapper('pair container');
+					}
+					$pair->addHtml($this->getWrapper('control container-single')->setHtml($s));
+					$container->addHtml($pair);
+				}
+			}
+			elseif ($control->getOption('rendered') || $control->getOption('type') === 'hidden' || $control->getForm(false) !== $this->form) {
+				// skip
+			}
+			elseif ($control->getOption('type') === 'button') {
+				$buttons[] = $control;
+			}
+			else {
+				if ($buttons) {
+					$container->addHtml($this->renderPairMulti($buttons));
+					$buttons = null;
+				}
+				$container->addHtml($this->renderPair($control));
+			}
+		}
+
+		if ($buttons) {
+			$container->addHtml($this->renderPairMulti($buttons));
+		}
+
+		$s = '';
+		if (count($container)) {
+			$s .= "\n" . $container . "\n";
+		}
+
+		return $s;
+	}
+
+
+
+	private function renderControls2($parent, $root = False) : string
 	{
 		/*
 		Myslel jsem místo toho $root. Ale nějak to zlobí.
@@ -359,7 +424,7 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	 * @param  Nette\Forms\IControl[]
 	 * @return string
 	 */
-	function renderPairMulti(array $controls)
+	function renderPairMulti(array $controls) : string
 	{
 		$s = [];
 		foreach ($controls as $control) {

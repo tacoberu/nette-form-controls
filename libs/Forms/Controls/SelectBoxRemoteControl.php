@@ -122,10 +122,7 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 
 
 
-	/**
-	 * @return Nette\Utils\Html
-	 */
-	function getControl()
+	function getControl() : Nette\Utils\Html
 	{
 		/** @var Nette\Utils\Html $el */
 		$el = parent::getControl();
@@ -145,7 +142,7 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 	 * Loads HTTP data.
 	 * @return void
 	 */
-	function loadHttpData()
+	function loadHttpData() : void
 	{
 		$value = $this->getHttpData(Nette\Forms\Form::DATA_TEXT);
 		if (($value === NULL) || (is_array($this->disabled) && isset($this->disabled[$value]))){

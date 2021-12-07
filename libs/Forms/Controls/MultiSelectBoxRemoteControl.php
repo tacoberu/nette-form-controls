@@ -122,10 +122,7 @@ class MultiSelectBoxRemoteControl extends Controls\MultiSelectBox implements ISi
 
 
 
-	/**
-	 * @return Nette\Utils\Html
-	 */
-	function getControl()
+	function getControl() : Nette\Utils\Html
 	{
 		/** @var Nette\Utils\Html $el */
 		$el = parent::getControl();
@@ -142,7 +139,7 @@ class MultiSelectBoxRemoteControl extends Controls\MultiSelectBox implements ISi
 	 * Loads HTTP data.
 	 * @return void
 	 */
-	function loadHttpData()
+	function loadHttpData() : void
 	{
 		$values = $this->getHttpData(Nette\Forms\Form::DATA_TEXT);
 
@@ -190,9 +187,8 @@ class MultiSelectBoxRemoteControl extends Controls\MultiSelectBox implements ISi
 
 	/**
 	 * Returns selected key.
-	 * @return string|int
 	 */
-	function getValue()
+	function getValue() : array
 	{
 		if (empty($this->selectedItems)) {
 			return [];
@@ -209,9 +205,8 @@ class MultiSelectBoxRemoteControl extends Controls\MultiSelectBox implements ISi
 
 	/**
 	 * Returns selected values.
-	 * @return array
 	 */
-	function getSelectedItems()
+	function getSelectedItems() : array
 	{
 		if (empty($this->selectedItems)) {
 			return [];

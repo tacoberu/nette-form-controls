@@ -14,6 +14,7 @@ use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
 use Nette\Application\UI\PresenterComponentReflection;
 use Nette\ComponentModel\IContainer;
+use Nette\ComponentModel\IComponent;
 use Nette\Utils\Strings;
 
 
@@ -26,7 +27,7 @@ trait SignalControl
 	/** @var array|mixed[] */
 	private $params = array();
 
-	protected function validateParent(IContainer $parent)
+	protected function validateParent(IContainer $parent) : void
 	{
 		parent::validateParent($parent);
 
@@ -47,10 +48,8 @@ trait SignalControl
 	/**
 	 * This method will be called when the component (or component's parent)
 	 * becomes attached to a monitored object. Do not call this method yourself.
-	 *
-	 * @param  \Nette\ComponentModel\IComponent
 	 */
-	protected function attached($component)
+	protected function attached(IComponent $component) : void
 	{
 		if (!$this instanceof \Nette\Application\UI\ISignalReceiver) {
 			throw new \Nette\InvalidStateException(
@@ -70,10 +69,8 @@ trait SignalControl
 		parent::attached($component);
 	}
 
-	/**
-	 * @param string
-	 */
-	function signalReceived($signal)
+
+	function signalReceived(string $signal) : void
 	{
 		$methodName = sprintf('handle%s', \Nette\Utils\Strings::firstUpper($signal));
 		if (!method_exists($this, $methodName)) {

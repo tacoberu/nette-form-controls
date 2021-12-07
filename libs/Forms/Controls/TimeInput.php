@@ -113,9 +113,8 @@ class TimeInput extends BaseControl
 
 	/**
 	 * Is control filled?
-	 * @return bool
 	 */
-	function isFilled()
+	function isFilled() : bool
 	{
 		$value = $this->value;
 		return $value !== NULL && $value !== array() && $value !== '';
