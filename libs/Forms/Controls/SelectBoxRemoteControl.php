@@ -145,7 +145,7 @@ class SelectBoxRemoteControl extends Controls\SelectBox implements ISignalReceiv
 	 * Loads HTTP data.
 	 * @return void
 	 */
-	function loadHttpData()
+	function loadHttpData() : void
 	{
 		$value = $this->getHttpData(Nette\Forms\Form::DATA_TEXT);
 		if (($value === NULL) || (is_array($this->disabled) && isset($this->disabled[$value]))){

@@ -142,7 +142,7 @@ class MultiSelectBoxRemoteControl extends Controls\MultiSelectBox implements ISi
 	 * Loads HTTP data.
 	 * @return void
 	 */
-	function loadHttpData()
+	function loadHttpData() : void
 	{
 		$values = $this->getHttpData(Nette\Forms\Form::DATA_TEXT);
 

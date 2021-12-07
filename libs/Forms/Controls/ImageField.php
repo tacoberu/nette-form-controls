@@ -121,7 +121,7 @@ class ImageField extends BaseControl
 	 * Loads HTTP data.
 	 * @return void
 	 */
-	function loadHttpData()
+	function loadHttpData() : void
 	{
 		$this->rawValue = $this->getHttpData(Form::DATA_TEXT);
 	}

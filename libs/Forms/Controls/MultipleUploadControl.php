@@ -155,7 +155,7 @@ class MultipleUploadControl extends BaseControl
 	 *
 	 * @return void
 	 */
-	function loadHttpData()
+	function loadHttpData() : void
 	{
 		$this->value = array();
 
