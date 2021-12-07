@@ -10,6 +10,7 @@ use Nette;
 use Nette\Utils\Html;
 use Nette\Utils\IHtmlString;
 use Nette\Forms\ControlGroup;
+use Nette\ComponentModel\IComponent;
 
 
 /**
@@ -53,7 +54,7 @@ class Form extends Nette\Application\UI\Form
 
 
 
-	function addGroup($caption = null, $setAsCurrent = true)
+	function addGroup($caption = null, bool $setAsCurrent = true) : ControlGroup
 	{
 		$group = new MyControlGroup;
 		$group->setOption('label', $caption);
@@ -90,7 +91,7 @@ class Form extends Nette\Application\UI\Form
 	 * @param  string|int|ControlGroup
 	 * @return void
 	 */
-	function removeGroup($name)
+	function removeGroup($name) : void
 	{
 		if (is_string($name) && isset($this->groups[$name])) {
 			$group = $this->groups[$name];
@@ -116,7 +117,7 @@ class Form extends Nette\Application\UI\Form
 	 * Returns all defined groups.
 	 * @return ControlGroup[]
 	 */
-	function getGroups()
+	function getGroups() : array
 	{
 		return $this->groups;
 	}
@@ -128,14 +129,14 @@ class Form extends Nette\Application\UI\Form
 	 * @param  string|int
 	 * @return ControlGroup|null
 	 */
-	function getGroup($name)
+	function getGroup($name) : ?ControlGroup
 	{
 		return isset($this->groups[$name]) ? $this->groups[$name] : null;
 	}
 
 
 
-	protected function attached($presenter)
+	protected function attached(IComponent $presenter) : void
 	{
 		parent::attached($presenter);
 		if ($presenter instanceof Nette\Application\IPresenter) {
@@ -206,7 +207,7 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	 * Renders form body.
 	 * @return string
 	 */
-	function renderBody()
+	function renderBody() : string
 	{
 		$s = $remains = '';
 
@@ -220,7 +221,7 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			$s .= $out;
 		}
 
-		$s .= $remains . $this->renderControls($this->form, True);
+		$s .= $remains . $this->renderControls2($this->form, True);
 
 		$container = $this->getWrapper('form container');
 		$container->setHtml($s);
@@ -423,7 +424,7 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	 * @param  Nette\Forms\IControl[]
 	 * @return string
 	 */
-	function renderPairMulti(array $controls)
+	function renderPairMulti(array $controls) : string
 	{
 		$s = [];
 		foreach ($controls as $control) {
