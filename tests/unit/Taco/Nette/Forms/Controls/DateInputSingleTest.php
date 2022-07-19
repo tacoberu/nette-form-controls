@@ -78,7 +78,7 @@ class DateInputSingleTest extends PHPUnit_Framework_TestCase
 					. '{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateDate","msg":"Invalid format of date."},'
 					. '{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInputSingle::validateRange","msg":"Invalid range of date."}'
 					. ']\' '
-				. 'value="abc" data-date-format="yyyy-mm-dd" data-widget="datepicker">', (string)$m->control);
+				. 'data-date-format="yyyy-mm-dd" data-widget="datepicker">', (string)$m->control);
 		$this->assertEquals(array('Invalid format of date.'), $m->getErrors());
 	}
 
