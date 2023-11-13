@@ -7,6 +7,7 @@
 namespace Taco\Nette\Forms\Controls;
 
 use Nette,
+	Nette\ComponentModel\IComponent,
 	Nette\Utils\Html,
 	Nette\Utils\Validators,
 	Nette\Forms\Form,
