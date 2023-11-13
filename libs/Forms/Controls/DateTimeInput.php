@@ -88,6 +88,7 @@ class DateTimeInput extends BaseControl
 		$input->value = $this->value;
 		$input->{'data-date-format'} = self::formatAsBootstrapLike($this->format);
 		$input->{'data-widget'} = "datepicker";
+		$input->{'data-type'} = "datetime";
 		return $input;
 	}
 
