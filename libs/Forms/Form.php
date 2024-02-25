@@ -14,9 +14,9 @@ use Nette\ComponentModel\IComponent;
 
 
 /**
- * Vylepšení:
- * - vyžaduje callback pro získání inicializačních dat.
- * - umožňuje zanořování skupin
+ * Improvements:
+ * - requires a callback to get the initialization data.
+ * - allows submerging groups
  */
 class Form extends Nette\Application\UI\Form
 {
@@ -41,7 +41,7 @@ class Form extends Nette\Application\UI\Form
 		parent::__construct($parent, $name);
 		$this->name = $name;
 		$this->initialize = $initialize;
-		$this->monitor('Nette\Application\IPresenter');
+		$this->monitor(Nette\Application\IPresenter::class);
 		$this->setRenderer(new MyDefaultFormRenderer);
 	}
 
@@ -56,7 +56,7 @@ class Form extends Nette\Application\UI\Form
 
 	function addGroup($caption = null, bool $setAsCurrent = true) : ControlGroup
 	{
-		$group = new MyControlGroup;
+		$group = new MyControlGroup($this);
 		$group->setOption('label', $caption);
 		$group->setOption('visual', true);
 
@@ -75,7 +75,7 @@ class Form extends Nette\Application\UI\Form
 
 	function addGroupTo(ControlGroup $parent, $caption)
 	{
-		$group = new MyControlGroup;
+		$group = new MyControlGroup($this);
 		$group->setOption('label', $caption);
 		$group->setOption('visual', true);
 
@@ -153,10 +153,21 @@ class Form extends Nette\Application\UI\Form
 
 
 /**
- * Vlastní implementace která umožňuje zanořovat skupiny do sebe.
+ * Custom implementation that allows groups to be nested within each other.
  */
 class MyControlGroup extends Nette\Forms\ControlGroup
 {
+	private $form;
+	private $attrs = [];
+
+
+	function __construct(Nette\Forms\Form $form)
+	{
+		$this->form = $form;
+		parent::__construct();
+	}
+
+
 
 	/**
 	 * @return static
@@ -185,12 +196,40 @@ class MyControlGroup extends Nette\Forms\ControlGroup
 		return $this;
 	}
 
+
+
+	/**
+	 * Returns form.
+	 */
+	function getForm(bool $_throw = true): ?Nette\Forms\Form
+	{
+		return $this->form;
+	}
+
+
+
+	/**
+	 * Changes control's HTML attribute.
+	 * @return static
+	 */
+	function setHtmlAttribute(string $name, $value = true)
+	{
+		$this->attrs[$name] = $value;
+		return $this;
+	}
+
+
+
+	function getHtmlAttributes(): array
+	{
+		return $this->attrs;
+	}
 }
 
 
 
 /**
- * Vlastní implementace která umožňuje vykreslovat v sobě zanořené skupiny.
+ * Own implementation that allows drawing nested groups.
  */
 class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 {
@@ -199,6 +238,8 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	{
 		$this->wrappers['control']['container-single'] = 'td colspan="2"';
 		$this->wrappers['group-empty']['container'] = Null;
+		$this->wrappers['group-empty']['container'] = Null;
+		$this->wrappers['pair']['container-buttons'] = 'div class="field controls"';
 	}
 
 
@@ -278,7 +319,7 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			}
 			else {
 				if ($buttons) {
-					$container->addHtml($this->renderPairMulti($buttons));
+					$container->addHtml($this->renderButtons($buttons));
 					$buttons = null;
 				}
 				$container->addHtml($this->renderPair($control));
@@ -286,7 +327,7 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		}
 
 		if ($buttons) {
-			$container->addHtml($this->renderPairMulti($buttons));
+			$container->addHtml($this->renderButtons($buttons));
 		}
 
 		$s = '';
@@ -342,7 +383,7 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			}
 			else {
 				if ($buttons) {
-					$container->addHtml($this->renderPairMulti($buttons));
+					$container->addHtml($this->renderButtons($buttons));
 					$buttons = null;
 				}
 				$container->addHtml($this->renderPair($control));
@@ -350,7 +391,7 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		}
 
 		if ($buttons) {
-			$container->addHtml($this->renderPairMulti($buttons));
+			$container->addHtml($this->renderButtons($buttons));
 		}
 
 		$s = '';
@@ -372,6 +413,10 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			$container = $group->getOption('container', $this->getWrapper('group container'));
 		}
 		$container = $container instanceof Html ? clone $container : Html::el($container);
+
+		foreach ($group->getHtmlAttributes() as $key => $value) {
+			$container->{$key} = $value;
+		}
 
 		$id = $group->getOption('id');
 		if ($id) {
@@ -457,5 +502,57 @@ class MyDefaultFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		return $pair->render(0);
 	}
 
+
+
+	/**
+	 * @param  Nette\Forms\IControl[]
+	 * @return string
+	 */
+	function renderButtons(array $controls) : string
+	{
+		$s = [];
+		foreach ($controls as $control) {
+			if (!$control instanceof Nette\Forms\IControl) {
+				throw new Nette\InvalidArgumentException('Argument must be array of Nette\Forms\IControl instances.');
+			}
+			$description = $control->getOption('description');
+			if ($description instanceof IHtmlString) {
+				$description = ' ' . $description;
+
+			} elseif ($description != null) { // intentionally ==
+				if ($control instanceof Nette\Forms\Controls\BaseControl) {
+					$description = $control->translate($description);
+				}
+				$description = ' ' . $this->getWrapper('control description')->setText($description);
+
+			} else {
+				$description = '';
+			}
+
+			$control->setOption('rendered', true);
+			$el = $control->getControl();
+			if ($el instanceof Html && $el->getName() === 'input') {
+				$el->class($this->getValue("control .$el->type"), true);
+			}
+			$s[] = $el . $description;
+		}
+
+		if ($this->hasWrapper('pair container-buttons')) {
+			$pair = $this->getWrapper('pair container-buttons');
+		}
+		else {
+			$pair = $this->getWrapper('pair container');
+		}
+		$pair->addHtml($this->getWrapper('control container-single')->setHtml(implode(' ', $s)));
+
+		return $pair->render(0);
+	}
+
+
+
+	function hasWrapper(string $name): bool
+	{
+		return (bool) $this->getValue($name);
+	}
 
 }
