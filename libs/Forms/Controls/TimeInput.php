@@ -103,6 +103,7 @@ class TimeInput extends BaseControl
 		$input->value = $this->value;
 		$input->{'data-time-format'} = self::formatAsPosixLike($this->format);
 		$input->{'data-widget'} = "timepicker";
+		$input->{'data-type'} = "time";
 		if ($this->step) {
 			$input->{'data-time-step'} = $this->step;
 		}

@@ -121,6 +121,7 @@ class DateInput extends BaseControl
 			$input->{'data-date-end-date'} = $this->end->format($this->format);
 		}
 		$input->{'data-widget'} = "datepicker";
+		$input->{'data-type'} = "date";
 		return $input;
 	}
 
