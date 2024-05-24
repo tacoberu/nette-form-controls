@@ -42,19 +42,23 @@ class FileUploaded
 
 
 	/**
+	 * Zda byl soubor uložen do systému (True), nebo je jen v transakci (False).
 	 * @var boolean
 	 */
 	private $commited = False;
 
 
 	/**
+	 * V případě $commited == True && $remove == True - Soubor nahraný do systému, který má být smazán.
+	 * V případě $commited == False && $remove == True - Soubor nahraný do transakce, který má být z transakce odstraněn.
 	 * @var boolean
 	 */
 	private $remove = False;
 
 
 	/**
-	 * @param string $path
+	 * @param string $path Cesta k reálnému souboru. Slouží to jednak jako identifikátor, a druhak se to pokusíme zobrazit.
+	 * @param string $type Mimetype as: "image/jpeg"
 	 */
 	function __construct($path, $type, $name = Null)
 	{
@@ -91,6 +95,16 @@ class FileUploaded
 	 * @return string
 	 */
 	function getPath()
+	{
+		return $this->path;
+	}
+
+
+
+	/**
+	 * @return string
+	 */
+	function getId()
 	{
 		return $this->path;
 	}
@@ -145,6 +159,30 @@ class FileUploaded
 	function getContentType()
 	{
 		return $this->type;
+	}
+
+
+
+	/**
+	 * Has been any file uploaded?
+	 */
+	function isFilled(): bool
+	{
+		return ! $this->remove;
+	}
+
+
+
+	function getSize(): int
+	{
+		return 1;
+	}
+
+
+
+	function getError(): int
+	{
+		return 0;
 	}
 
 }

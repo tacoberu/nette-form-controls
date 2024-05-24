@@ -106,6 +106,16 @@ class MultipleUploadControl extends BaseControl
 		};
 
 		$this->store = (!empty($store)) ? $store : new UploadStoreTemp();
+
+		$this->monitor(Form::class, function (Form $form): void {
+			if ( ! $form->isMethod('post')) {
+				throw new Nette\InvalidStateException('File upload requires method POST.');
+			}
+			$form->getElementPrototype()->enctype = 'multipart/form-data';
+			if ( ! isset($form[self::PRELOAD_BUTTON])) {
+				$form->addSubmit(self::PRELOAD_BUTTON, 'Preload')->setValidationScope([]);
+			}
+		});
 	}
 
 
@@ -152,7 +162,7 @@ class MultipleUploadControl extends BaseControl
 
 
 	/**
-	 * Loads HTTP data. File moved to transaction.
+	 * Loads HTTP data. Files moved to transaction.
 	 *
 	 * @return void
 	 */
@@ -288,27 +298,6 @@ class MultipleUploadControl extends BaseControl
 	}
 
 
-
-	/**
-	 * This method will be called when the component (or component's parent)
-	 * becomes attached to a monitored object. Do not call this method yourself.
-	 */
-	protected function attached(IComponent $form) : void
-	{
-		if ($form instanceof Nette\Forms\Form) {
-			if ($form->getMethod() !== Nette\Forms\Form::POST) {
-				throw new Nette\InvalidStateException('File upload requires method POST.');
-			}
-			$form->getElementPrototype()->enctype = 'multipart/form-data';
-			if ( ! isset($form[self::PRELOAD_BUTTON])) {
-				$form->addSubmit(self::PRELOAD_BUTTON, 'Preload')->setValidationScope(False);
-			}
-		}
-		parent::attached($form);
-	}
-
-
-
 	private static function assertUploadesFile(Taco\Nette\Http\FileUploaded $value)
 	{
 		return $value;
@@ -428,11 +417,11 @@ interface UploadStore
 
 
 	/**
-	 * Přesunutí do adresáře který reprezentuje transakci.
+	 * Přesunutí nahrávaného souboru do adresáře který reprezentuje transakci. Vrátí nové umístění.
 	 *
 	 * @param Nette\Http\FileUpload $file Soubor do transakce.
 	 *
-	 * @return Soubor v transakci
+	 * @return FileUploaded
 	 */
 	function append(FileUpload $file);
 
@@ -440,6 +429,7 @@ interface UploadStore
 
 	/**
 	 * Odstranění adresáře s transakcí.
+	 * @return void
 	 */
 	function destroy();
 
@@ -498,10 +488,6 @@ class UploadStoreTemp implements UploadStore
 
 
 
-	/**
-	 * Jedinečný identifikátor, pod kterým je evidována transakce.
-	 * @param int
-	 */
 	function setId($id)
 	{
 		Validators::assert($id, 'numeric:1..');
@@ -510,10 +496,6 @@ class UploadStoreTemp implements UploadStore
 
 
 
-	/**
-	 * Jedinečný identifikátor, pod kterým je evidována transakce.
-	 * @return int
-	 */
 	function getId()
 	{
 		if (empty($this->id)) {
@@ -524,10 +506,6 @@ class UploadStoreTemp implements UploadStore
 
 
 
-	/**
-	 * @param string Filename of uploaded file.
-	 * @return bool
-	 */
 	function exists($filename)
 	{
 		return file_exists($filename);
@@ -535,13 +513,6 @@ class UploadStoreTemp implements UploadStore
 
 
 
-	/**
-	 * Přesunutí do adresáře který reprezentuje transakci.
-	 *
-	 * @param Nette\Http\FileUpload $file Soubor do transakce.
-	 *
-	 * @return Soubor v transakci
-	 */
 	function append(FileUpload $file)
 	{
 		$path = $this->baseDir();
@@ -560,9 +531,6 @@ class UploadStoreTemp implements UploadStore
 
 
 
-	/**
-	 * Odstranění adresáře s transakcí.
-	 */
 	function destroy()
 	{
 		$dir = implode(DIRECTORY_SEPARATOR, $this->baseDir());

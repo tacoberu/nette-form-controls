@@ -10,6 +10,8 @@ use Nette;
 
 
 /**
+ * @deprecated
+ *
  * Soubor ke smazání.
  *
  * @author Martin Takáč <martin@takac.name>
