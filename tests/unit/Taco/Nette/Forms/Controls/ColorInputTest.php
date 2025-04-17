@@ -6,14 +6,11 @@
 
 namespace Taco\Nette\Forms\Controls;
 
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use Nette\Forms\Form;
 
 
-/**
- * @author Martin Takáč <martin@takac.name>
- */
-class ColorInputTest extends PHPUnit_Framework_TestCase
+class ColorInputTest extends TestCase
 {
 
 	function testWithoutDefaultValue()

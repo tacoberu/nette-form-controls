@@ -6,18 +6,12 @@
 
 namespace Taco\Nette\Forms\Controls;
 
-require_once __dir__ . '/../../../../../../vendor/autoload.php';
-
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use Nette\Forms\Form;
 use DateTime;
 
 
-/**
- * @call phpunit --bootstrap ../../../../../bootstrap.php ValueTest.php
- * @author Martin Takáč <martin@takac.name>
- */
-class DateInputTest extends PHPUnit_Framework_TestCase
+class DateInputTest extends TestCase
 {
 
 
