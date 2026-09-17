@@ -67,7 +67,7 @@ class DateInput extends BaseControl
 	function setValue($value)
 	{
 		if ($value) {
-			if ($value instanceof \DateTime) {
+			if ($value instanceof \DateTimeInterface) {
 				$value = $value->format($this->format);
 			}
 			elseif (self::isValidDate($this->format, $value)) {
@@ -94,9 +94,8 @@ class DateInput extends BaseControl
 		}
 
 		if (self::validateDate($this)) {
-			if ($value instanceof \DateTime) {
-				$value->setTime(0,0,0);
-				return $value;
+			if ($value instanceof \DateTimeInterface) {
+				return $value->setTime(0,0,0);
 			}
 			$value = DateTime::createFromFormat($this->format, $value);
 			$value->setTime(0,0,0);
@@ -112,6 +111,7 @@ class DateInput extends BaseControl
 	function getControl()
 	{
 		$input = parent::getControl();
+		$input->type = 'date';
 		$input->value = $this->value;
 		$input->{'data-date-format'} = self::formatAsBootstrapLike($this->format);
 		if ($this->start) {
@@ -210,7 +210,7 @@ class DateInput extends BaseControl
 				DateTime::createFromFormat($format, $value);
 				return True;
 			}
-			if ($value instanceof \DateTime) {
+			if ($value instanceof \DateTimeInterface) {
 				return True;
 			}
 			return False;

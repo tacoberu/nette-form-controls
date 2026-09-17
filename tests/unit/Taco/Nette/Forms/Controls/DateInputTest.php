@@ -25,7 +25,7 @@ class DateInputTest extends TestCase
 		$this->assertNull($m->getValue());
 		$this->assertFalse((bool)$m->getOption('rendered'));
 		$this->assertInstanceOf('Nette\Utils\Html', $m->control);
-		$this->assertEquals('<input name="foo" id="frm-foo" '
+		$this->assertEquals('<input type="date" name="foo" id="frm-foo" '
 				. 'data-nette-rules=\'[{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInput::validateDate","msg":"Invalid format of date."},{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInput::validateRange","msg":"Invalid range of date."}]\' '
 				. 'data-date-format="yyyy-mm-dd" data-widget="datepicker" data-type="date">', (string)$m->control);
 
@@ -44,7 +44,7 @@ class DateInputTest extends TestCase
 
 		//~ $this->assertNull($m->getValue());
 		$this->assertInstanceOf('Nette\Utils\Html', $m->control);
-		$this->assertEquals('<input name="foo" id="frm-foo" '
+		$this->assertEquals('<input type="date" name="foo" id="frm-foo" '
 				. 'data-nette-rules=\'[{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInput::validateDate","msg":"Invalid format of date."},{"op":"Taco\\\\Nette\\\\Forms\\\\Controls\\\\DateInput::validateRange","msg":"Invalid range of date."}]\' '
 				. 'value="2011-04-30" '
 				. 'data-date-format="yyyy-mm-dd" '
@@ -63,7 +63,7 @@ class DateInputTest extends TestCase
 
 		$m->loadHttpData();
 
-		dump($m->getValue());
+		//~ dump($m->getValue());
 	}
 
 
