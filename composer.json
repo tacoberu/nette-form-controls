@@ -24,5 +24,10 @@
 			"libs/"
 		]
     },
+	"scripts": {
+		"phpunit": [
+			"vendor/bin/phpunit"
+		]
+	},
     "license": "MIT"
 }
